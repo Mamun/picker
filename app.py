@@ -80,12 +80,16 @@ with st.sidebar:
     ).upper().strip()
 
     period_options = {
+        "1 Week":   7,
+        "2 Weeks":  14,
+        "1 Month":  30,
+        "3 Months": 90,
         "6 Months": 180,
-        "1 Year": 365,
-        "2 Years": 730,
-        "5 Years": 1825,
+        "1 Year":   365,
+        "2 Years":  730,
+        "5 Years":  1825,
     }
-    period_label = st.selectbox("Historical Period", list(period_options.keys()), index=1)
+    period_label = st.selectbox("Historical Period", list(period_options.keys()), index=2)
     period_days = period_options[period_label]
     show_volume = st.checkbox("Show Volume", value=True)
     show_fibonacci = st.checkbox("Show Fibonacci Levels", value=True)
