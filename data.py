@@ -723,6 +723,32 @@ def fetch_spx_intraday(period: str = "1d", interval: str = "5m") -> pd.DataFrame
         return pd.DataFrame()
 
 
+@st.cache_data(ttl=3600)
+def fetch_vix_history(period: str = "1y") -> pd.DataFrame:
+    """
+    Daily VIX close history alongside SPY close for dual-axis comparison.
+    Returns a DataFrame with columns: Date (index), SPY, VIX.
+    Cached for 1 hour.
+    """
+    try:
+        raw = yf.download(
+            ["SPY", "^VIX"],
+            period=period,
+            interval="1d",
+            progress=False,
+            auto_adjust=True,
+        )
+        if isinstance(raw.columns, pd.MultiIndex):
+            close = raw["Close"].copy()
+        else:
+            close = raw[["Close"]].copy()
+        close.columns = [c.replace("^VIX", "VIX") for c in close.columns]
+        close = close.dropna()
+        return close
+    except Exception:
+        return pd.DataFrame()
+
+
 @st.cache_data(ttl=120)
 def fetch_index_snapshot() -> pd.DataFrame:
     """

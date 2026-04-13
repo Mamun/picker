@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from data import fetch_index_snapshot, fetch_spx_intraday, fetch_spx_quote
+from data import fetch_index_snapshot, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history
 from indicators import compute_daily_gaps
 
 
@@ -114,6 +114,12 @@ def render_spx_dashboard_tab() -> None:
 
     st.markdown("---")
 
+    # ── VIX panel ─────────────────────────────────────────────────────────────
+    st.markdown("#### VIX — Fear & Greed Gauge")
+    _render_vix_section()
+
+    st.markdown("---")
+
     # ── Daily chart (1 year with MA overlays) ─────────────────────────────────
     st.markdown("#### Daily Chart — 1 Year  ·  MA20 / MA50 / MA200")
     daily_df = fetch_spx_intraday(period="1y", interval="1d")
@@ -131,6 +137,120 @@ def render_spx_dashboard_tab() -> None:
 
 
 # ── Private helpers ────────────────────────────────────────────────────────────
+
+def _render_vix_section() -> None:
+    """Current VIX level card + 1-year dual-axis SPY vs VIX chart."""
+    vix_df = fetch_vix_history(period="1y")
+    if vix_df.empty or "VIX" not in vix_df.columns:
+        st.info("VIX data unavailable.")
+        return
+
+    vix_now = float(vix_df["VIX"].iloc[-1])
+    vix_prev = float(vix_df["VIX"].iloc[-2]) if len(vix_df) > 1 else vix_now
+    vix_chg  = vix_now - vix_prev
+    vix_52hi = float(vix_df["VIX"].max())
+    vix_52lo = float(vix_df["VIX"].min())
+    vix_avg  = float(vix_df["VIX"].mean())
+
+    # Zone classification
+    if vix_now < 15:
+        zone, zone_clr, zone_bg = "😌 Complacent", "#22C55E", "rgba(34,197,94,0.08)"
+    elif vix_now < 20:
+        zone, zone_clr, zone_bg = "😐 Normal",     "#86EFAC", "rgba(134,239,172,0.08)"
+    elif vix_now < 30:
+        zone, zone_clr, zone_bg = "😨 Elevated",   "#F59E0B", "rgba(245,158,11,0.08)"
+    else:
+        zone, zone_clr, zone_bg = "🔥 Extreme Fear","#EF4444", "rgba(239,68,68,0.08)"
+
+    # VIX level card + metrics
+    c_card, c_metrics = st.columns([1, 3])
+    with c_card:
+        st.markdown(
+            f"""
+<div style="background:{zone_bg};border:1px solid {zone_clr}44;border-radius:8px;
+            padding:14px 16px;text-align:center;">
+  <div style="font-size:10px;color:#94A3B8;font-weight:600;letter-spacing:.06em">VIX · CBOE</div>
+  <div style="font-size:36px;font-weight:800;color:#F1F5F9;line-height:1.1;margin:4px 0">{vix_now:.2f}</div>
+  <div style="font-size:13px;font-weight:700;color:{zone_clr}">{zone}</div>
+  <div style="font-size:11px;color:#64748B;margin-top:6px">
+    {'▲' if vix_chg >= 0 else '▼'}&nbsp;{abs(vix_chg):.2f} vs prev close
+  </div>
+</div>""",
+            unsafe_allow_html=True,
+        )
+    with c_metrics:
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("1Y High",  f"{vix_52hi:.2f}", help="Highest VIX close in the past year")
+        m2.metric("1Y Low",   f"{vix_52lo:.2f}", help="Lowest VIX close in the past year")
+        m3.metric("1Y Avg",   f"{vix_avg:.2f}",  help="Average VIX close over the past year")
+        m4.metric("vs 1Y Avg", f"{vix_now - vix_avg:+.2f}",
+                  delta_color="inverse",
+                  help="Positive = more fearful than average; negative = calmer than average")
+
+        st.markdown("""
+<div style="font-size:11px;color:#64748B;line-height:1.8;margin-top:8px">
+&nbsp;VIX &lt; 15 &nbsp;😌&nbsp; Complacent — low fear, market confident
+&nbsp;·&nbsp;
+15–20 &nbsp;😐&nbsp; Normal range
+&nbsp;·&nbsp;
+20–30 &nbsp;😨&nbsp; Elevated fear / uncertainty
+&nbsp;·&nbsp;
+&gt; 30 &nbsp;🔥&nbsp; Extreme fear / crisis
+</div>""", unsafe_allow_html=True)
+
+    st.plotly_chart(_spy_vix_chart(vix_df), width="stretch")
+
+
+def _spy_vix_chart(df) -> go.Figure:
+    """Dual-axis chart: SPY price (left axis) + VIX (right axis, shaded zones)."""
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # SPY line
+    fig.add_trace(go.Scatter(
+        x=df.index, y=df["SPY"],
+        name="SPY",
+        mode="lines",
+        line=dict(color="#3B82F6", width=2),
+        hovertemplate="SPY: <b>%{y:,.2f}</b><extra></extra>",
+    ), secondary_y=False)
+
+    # VIX filled area
+    fig.add_trace(go.Scatter(
+        x=df.index, y=df["VIX"],
+        name="VIX",
+        mode="lines",
+        line=dict(color="#F59E0B", width=1.5),
+        fill="tozeroy",
+        fillcolor="rgba(245,158,11,0.08)",
+        hovertemplate="VIX: <b>%{y:.2f}</b><extra></extra>",
+    ), secondary_y=True)
+
+    # Zone reference lines on VIX axis
+    for level, color, label in [
+        (15, "#22C55E", "VIX 15 — complacent"),
+        (20, "#F59E0B", "VIX 20 — caution"),
+        (30, "#EF4444", "VIX 30 — fear"),
+    ]:
+        fig.add_hline(
+            y=level, secondary_y=True,
+            line_dash="dot", line_color=color, line_width=1,
+            annotation_text=label,
+            annotation_font_size=9,
+            annotation_position="top right",
+        )
+
+    fig.update_layout(
+        template="plotly_dark",
+        height=360,
+        margin=dict(l=60, r=80, t=20, b=40),
+        hovermode="x unified",
+        legend=dict(orientation="h", y=1.06, x=0),
+        xaxis=dict(showgrid=False),
+    )
+    fig.update_yaxes(title_text="SPY Price", secondary_y=False, gridcolor="#1E293B")
+    fig.update_yaxes(title_text="VIX", secondary_y=True, gridcolor="rgba(0,0,0,0)", showgrid=False)
+    return fig
+
 
 def _render_spy_gap_table(daily_df) -> None:
     st.markdown("#### Daily Gaps (Last 30 Days)")
