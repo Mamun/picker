@@ -34,7 +34,7 @@ REVERSAL_PATTERNS = [
 # (e.g. export SCREENER_TICKER_COUNT=30).  Defaults to 50.
 _SPX_UNIVERSE = [
     # 1-10
-    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "BRK.B", "LLY", "AVGO", "TSLA",
+    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "BRK-B", "LLY", "AVGO", "TSLA",
     # 11-20
     "JPM", "V", "UNH", "XOM", "MA", "HD", "PG", "JNJ", "ABBV", "WMT",
     # 21-30

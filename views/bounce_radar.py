@@ -23,7 +23,7 @@ def render_bounce_radar_tab() -> None:
         "Max results to show",
         min_value=10, max_value=50, value=30, step=5,
     )
-    scan_btn = c3.button("🔍 Scan", use_container_width=True, type="primary")
+    scan_btn = c3.button("🔍 Scan", width='stretch', type="primary")
 
     st.markdown("---")
 
@@ -59,11 +59,11 @@ def render_bounce_radar_tab() -> None:
     )
 
     styled = _style_table(df)
-    st.dataframe(styled, use_container_width=True, hide_index=True)
+    st.dataframe(styled, width='stretch', hide_index=True)
 
     # ── RSI bar chart ─────────────────────────────────────────────────────────
     st.markdown("#### RSI Distribution")
-    st.plotly_chart(_rsi_chart(df), use_container_width=True)
+    st.plotly_chart(_rsi_chart(df), width='stretch')
 
 
 # ── Private helpers ────────────────────────────────────────────────────────────

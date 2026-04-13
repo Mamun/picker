@@ -29,7 +29,7 @@ def render_squeeze_scanner_tab() -> None:
         "Max results",
         min_value=10, max_value=50, value=30, step=5,
     )
-    scan_btn = c4.button("🔍 Scan", use_container_width=True, type="primary")
+    scan_btn = c4.button("🔍 Scan", width='stretch', type="primary")
 
     st.markdown("---")
 
@@ -80,16 +80,16 @@ def render_squeeze_scanner_tab() -> None:
 
     # ── Results table ─────────────────────────────────────────────────────────
     st.markdown("#### Candidates — sorted by Squeeze Score ↓")
-    st.dataframe(_style_table(df), use_container_width=True, hide_index=True)
+    st.dataframe(_style_table(df), width='stretch', hide_index=True)
 
     # ── Scatter: Short Float vs RSI (bubble = Squeeze Score) ─────────────────
     st.markdown("#### Short Float % vs RSI — bubble size = Squeeze Score")
-    st.plotly_chart(_scatter_chart(df), use_container_width=True)
+    st.plotly_chart(_scatter_chart(df), width='stretch')
 
     # ── Days-to-cover bar chart ────────────────────────────────────────────────
     st.markdown("#### Days to Cover")
     st.caption("Higher = shorts need more trading days to exit → more fuel if squeeze ignites")
-    st.plotly_chart(_days_to_cover_chart(df), use_container_width=True)
+    st.plotly_chart(_days_to_cover_chart(df), width='stretch')
 
 
 # ── Private helpers ────────────────────────────────────────────────────────────

@@ -108,7 +108,7 @@ def render_spx_dashboard_tab() -> None:
     else:
         st.plotly_chart(
             _intraday_chart(intra_df, quote["prev_close"]),
-            use_container_width=True,
+            width='stretch',
         )
 
     st.markdown("---")
@@ -119,7 +119,7 @@ def render_spx_dashboard_tab() -> None:
     if daily_df.empty:
         st.info("Daily data unavailable.")
     else:
-        st.plotly_chart(_daily_chart(daily_df), use_container_width=True)
+        st.plotly_chart(_daily_chart(daily_df), width='stretch')
 
         st.markdown("---")
         st.markdown("#### Technical Summary")

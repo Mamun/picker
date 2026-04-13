@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 
 import numpy as np
 import pandas as pd
@@ -6,6 +7,9 @@ import streamlit as st
 import yfinance as yf
 
 from config import SPX_TICKERS
+
+# Suppress yfinance "possibly delisted" and "no timezone" warnings
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 
 def search_companies(query: str) -> list[dict]:

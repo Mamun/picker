@@ -11,7 +11,7 @@ def render_screener_tab() -> None:
     st.caption(f"Analyzing top {SCREENER_TICKER_COUNT} S&P 500 stocks · configurable via `SCREENER_TICKER_COUNT` env var")
     st.markdown("---")
 
-    if not st.button("🔄 Generate Recommendations", use_container_width=True, type="primary"):
+    if not st.button("🔄 Generate Recommendations", width='stretch', type="primary"):
         return
 
     with st.spinner(f"📊 Analyzing top {SCREENER_TICKER_COUNT} SPX stocks…"):
@@ -34,8 +34,8 @@ def render_screener_tab() -> None:
 
     if not buy_df.empty:
         st.markdown("### 🟢 BUY Recommendations")
-        st.dataframe(buy_df[display_cols], use_container_width=True, hide_index=True)
+        st.dataframe(buy_df[display_cols], width='stretch', hide_index=True)
 
     if not sell_df.empty:
         st.markdown("### 🔴 SELL / HOLD")
-        st.dataframe(sell_df[display_cols], use_container_width=True, hide_index=True)
+        st.dataframe(sell_df[display_cols], width='stretch', hide_index=True)

@@ -26,7 +26,7 @@ def render_search_tab() -> None:
         placeholder="Search by company name, e.g. Microsoft, Apple, Tesla…",
         label_visibility="collapsed",
     )
-    search_go = col_btn.button("Search", use_container_width=True)
+    search_go = col_btn.button("Search", width='stretch')
 
     if search_go:
         if search_query.strip():
@@ -62,7 +62,7 @@ def render_search_tab() -> None:
     show_fibonacci = c4.checkbox("Fibonacci", value=True)
     show_patterns  = c5.checkbox("Patterns",  value=True)
     show_rsi       = c6.checkbox("RSI",       value=True)
-    analyze_btn    = c7.button("Analyze", use_container_width=True, type="primary")
+    analyze_btn    = c7.button("Analyze", width='stretch', type="primary")
 
     # ── Analysis execution ────────────────────────────────────────────────────
     if not (analyze_btn or ticker):
@@ -177,7 +177,7 @@ def render_search_tab() -> None:
 
     with chart_col:
         fig = build_chart(display_df, fib, ticker, show_volume, show_fibonacci, show_patterns, show_rsi)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with gap_col:
         _render_gap_table(display_df)
@@ -198,7 +198,7 @@ def render_search_tab() -> None:
             }
             for k, v in fib.items()
         ])
-        st.dataframe(fib_df, use_container_width=True, hide_index=True)
+        st.dataframe(fib_df, width='stretch', hide_index=True)
 
     # ── MA summary table ──────────────────────────────────────────────────────
     _render_ma_summary(latest, price_now)
@@ -214,15 +214,25 @@ def _render_gap_table(display_df: pd.DataFrame) -> None:
     gaps_data["Date"] = gaps_data["Date"].dt.strftime("%m-%d")
     gaps_data = gaps_data.sort_values("Date", ascending=False).reset_index(drop=True)
 
-    display = gaps_data.drop("Filled", axis=1)
+    # Add human-readable status column (only for rows with an actual gap)
+    gaps_data["Status"] = gaps_data.apply(
+        lambda r: "—" if r["Gap $"] == 0 else ("✅ Filled" if r["Filled"] else "❌ Open"),
+        axis=1,
+    )
+
+    display = gaps_data[["Date", "Open", "Prev Close", "Gap $", "Gap %", "Status"]]
 
     def _highlight(row):
-        unfilled = gaps_data.loc[row.name, "Filled"] is False
-        style = "background-color: rgba(239,68,68,0.3); color:#EF4444; font-weight:bold"
-        return [style] * len(row) if unfilled else [""] * len(row)
+        gap    = gaps_data.loc[row.name, "Gap $"]
+        filled = gaps_data.loc[row.name, "Filled"]
+        # Skip zero-gap rows; use `not filled` — safe for both np.bool_ and Python bool
+        if gap == 0 or bool(filled):
+            return [""] * len(row)
+        style = "background-color: rgba(239,68,68,0.25); color:#EF4444; font-weight:600"
+        return [style] * len(row)
 
     st.dataframe(display.style.apply(_highlight, axis=1),
-                 use_container_width=True, hide_index=True, height=600)
+                 width='stretch', hide_index=True, height=600)
 
 
 def _render_pattern_summary(display_df: pd.DataFrame) -> None:
@@ -237,7 +247,7 @@ def _render_pattern_summary(display_df: pd.DataFrame) -> None:
             })
     if pattern_rows:
         st.markdown("#### Reversal Patterns Detected")
-        st.dataframe(pd.DataFrame(pattern_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(pattern_rows), width='stretch', hide_index=True)
     else:
         st.info("No reversal patterns were detected in the selected period.")
 
@@ -267,4 +277,4 @@ def _render_ma_summary(latest: pd.Series, price_now: float) -> None:
             "Stance":      "Above" if price_now > val_w else "Below",
             "Signal":      "🟢 Bullish (Long-term Uptrend)" if price_now > val_w else "🔴 Bearish (Long-term Downtrend)",
         })
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
