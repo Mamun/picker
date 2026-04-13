@@ -356,3 +356,310 @@ def fetch_squeeze_candidates(
         .head(top_n)
         .reset_index(drop=True)
     )
+
+
+# ── Munger Strategy helpers ────────────────────────────────────────────────────
+
+def _quality_score(info: dict) -> tuple[float, list[str]]:
+    """
+    Score a stock's fundamental quality (Munger-style).
+    Returns (score 0–85, breakdown list).
+
+    Component          Max
+    ─────────────────  ───
+    ROE                 25
+    Profit Margin       20
+    Revenue Growth      15
+    Debt/Equity         15
+    EPS Growth          10
+    ─────────────────  ───
+    Total               85
+    """
+    score = 0.0
+    breakdown: list[str] = []
+
+    # 1. Return on Equity (returnOnEquity — decimal)
+    roe = info.get("returnOnEquity")
+    if roe is not None:
+        roe_pct = roe * 100
+        if roe_pct >= 20:
+            pts = 25.0
+        elif roe_pct >= 15:
+            pts = 18.0
+        elif roe_pct >= 10:
+            pts = 10.0
+        elif roe_pct > 0:
+            pts = 5.0
+        else:
+            pts = 0.0
+        score += pts
+        breakdown.append(f"ROE {roe_pct:.1f}% → {pts:.0f}/25")
+
+    # 2. Profit Margin (profitMargins — decimal)
+    pm = info.get("profitMargins")
+    if pm is not None:
+        pm_pct = pm * 100
+        if pm_pct >= 20:
+            pts = 20.0
+        elif pm_pct >= 10:
+            pts = 14.0
+        elif pm_pct >= 5:
+            pts = 8.0
+        elif pm_pct > 0:
+            pts = 3.0
+        else:
+            pts = 0.0
+        score += pts
+        breakdown.append(f"Profit Margin {pm_pct:.1f}% → {pts:.0f}/20")
+
+    # 3. Revenue Growth (revenueGrowth — decimal YoY)
+    rg = info.get("revenueGrowth")
+    if rg is not None:
+        rg_pct = rg * 100
+        if rg_pct >= 15:
+            pts = 15.0
+        elif rg_pct >= 8:
+            pts = 10.0
+        elif rg_pct >= 3:
+            pts = 6.0
+        elif rg_pct >= 0:
+            pts = 2.0
+        else:
+            pts = 0.0
+        score += pts
+        breakdown.append(f"Revenue Growth {rg_pct:.1f}% → {pts:.0f}/15")
+
+    # 4. Debt/Equity (debtToEquity — already as percentage, e.g. 45 means 0.45×)
+    de = info.get("debtToEquity")
+    if de is not None:
+        de_ratio = de / 100.0
+        if de_ratio < 0.3:
+            pts = 15.0
+        elif de_ratio < 0.7:
+            pts = 10.0
+        elif de_ratio < 1.5:
+            pts = 5.0
+        else:
+            pts = 0.0
+        score += pts
+        breakdown.append(f"D/E {de_ratio:.2f}× → {pts:.0f}/15")
+
+    # 5. EPS Growth (earningsGrowth — decimal YoY)
+    eg = info.get("earningsGrowth")
+    if eg is not None:
+        eg_pct = eg * 100
+        if eg_pct >= 15:
+            pts = 10.0
+        elif eg_pct >= 8:
+            pts = 7.0
+        elif eg_pct >= 0:
+            pts = 3.0
+        else:
+            pts = 0.0
+        score += pts
+        breakdown.append(f"EPS Growth {eg_pct:.1f}% → {pts:.0f}/10")
+
+    return score, breakdown
+
+
+def _proximity_score(dist_pct: float) -> int:
+    """Points for how close price is to the 200-week MA. Closer = higher score."""
+    abs_d = abs(dist_pct)
+    if abs_d <= 2:
+        return 15
+    elif abs_d <= 5:
+        return 12
+    elif abs_d <= 10:
+        return 8
+    elif abs_d <= 15:
+        return 4
+    elif abs_d <= 20:
+        return 2
+    return 0
+
+
+@st.cache_data(ttl=3600)
+def fetch_munger_candidates(
+    threshold_pct: float = 15.0,
+    min_quality: float = 30.0,
+    top_n: int = 30,
+) -> pd.DataFrame:
+    """
+    Scan SPX_TICKERS for Charlie Munger-style setups:
+      "Buy wonderful companies at a fair price — ideally near the 200-week MA."
+
+    Filters:
+      • Price within ±threshold_pct of the 200-week moving average
+      • Quality Score ≥ min_quality
+
+    Munger Score = Quality Score (0–85) + Proximity Score (0–15)
+    Max total = 100.
+    """
+    results  = []
+    progress = st.empty()
+
+    for idx, ticker in enumerate(SPX_TICKERS):
+        progress.info(f"Scanning {ticker}… ({idx + 1}/{len(SPX_TICKERS)})")
+        try:
+            # Need ~4.5 years of daily data for a stable 200-week MA
+            end_date   = datetime.today()
+            start_date = end_date - timedelta(days=1600)
+            df = yf.download(
+                ticker,
+                start=start_date.strftime("%Y-%m-%d"),
+                end=end_date.strftime("%Y-%m-%d"),
+                progress=False,
+                auto_adjust=True,
+            )
+            if df.empty or len(df) < 200:
+                continue
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            df = df.dropna(subset=["Close"])
+            if len(df) < 200:
+                continue
+
+            # 200-week MA from weekly closes
+            weekly = df["Close"].resample("W").last().dropna()
+            if len(weekly) < 200:
+                continue
+            ma200w = float(weekly.rolling(200).mean().iloc[-1])
+            if np.isnan(ma200w):
+                continue
+
+            price    = float(df["Close"].iloc[-1])
+            dist_pct = (price - ma200w) / ma200w * 100
+
+            if abs(dist_pct) > threshold_pct:
+                continue
+
+            # Fundamental quality
+            info    = yf.Ticker(ticker).info
+            q_score, breakdown = _quality_score(info)
+
+            if q_score < min_quality:
+                continue
+
+            prox_score   = _proximity_score(dist_pct)
+            munger_score = q_score + prox_score
+
+            company_name = info.get("longName", ticker)
+            sector       = info.get("sector", "—")
+
+            # RSI-14 (last 60 days is enough)
+            delta    = df["Close"].diff()
+            avg_gain = delta.clip(lower=0).ewm(com=13, min_periods=14).mean()
+            avg_loss = (-delta.clip(upper=0)).ewm(com=13, min_periods=14).mean()
+            rs       = avg_gain / avg_loss.replace(0, np.nan)
+            rsi      = float((100 - 100 / (1 + rs)).iloc[-1])
+
+            results.append({
+                "Ticker":        ticker,
+                "Company":       company_name,
+                "Sector":        sector,
+                "Price":         round(price, 2),
+                "MA 200W":       round(ma200w, 2),
+                "Distance %":    round(dist_pct, 2),
+                "RSI":           round(rsi, 1),
+                "Quality Score": round(q_score, 1),
+                "Prox Score":    prox_score,
+                "Munger Score":  round(munger_score, 1),
+                "Breakdown":     " | ".join(breakdown),
+            })
+        except Exception:
+            continue
+
+    progress.empty()
+    if not results:
+        return pd.DataFrame()
+
+    return (
+        pd.DataFrame(results)
+        .sort_values("Munger Score", ascending=False)
+        .head(top_n)
+        .reset_index(drop=True)
+    )
+
+
+# ── SPX live data ──────────────────────────────────────────────────────────────
+
+@st.cache_data(ttl=60)
+def fetch_spx_quote() -> dict:
+    """
+    Near-real-time S&P 500 quote via yfinance fast_info.
+    Cached for 60 seconds.  Returns {} on error.
+    """
+    try:
+        fi = yf.Ticker("^GSPC").fast_info
+        price = float(fi.last_price)
+        prev  = float(fi.previous_close)
+        return {
+            "price":      price,
+            "prev_close": prev,
+            "change":     price - prev,
+            "change_pct": (price - prev) / prev * 100,
+            "day_high":   float(getattr(fi, "day_high",            0) or 0),
+            "day_low":    float(getattr(fi, "day_low",             0) or 0),
+            "volume":     int(  getattr(fi, "volume",              0) or 0),
+            "w52_high":   float(getattr(fi, "fifty_two_week_high", 0) or 0),
+            "w52_low":    float(getattr(fi, "fifty_two_week_low",  0) or 0),
+        }
+    except Exception:
+        return {}
+
+
+@st.cache_data(ttl=120)
+def fetch_spx_intraday(period: str = "1d", interval: str = "5m") -> pd.DataFrame:
+    """
+    SPX price history for any period / interval combination.
+    Examples:
+      period="1d",  interval="5m"   → today's intraday bars
+      period="5d",  interval="30m"  → 5-day half-hourly bars
+      period="1y",  interval="1d"   → daily bars for MA/RSI analysis
+    Cached for 120 seconds.
+    """
+    try:
+        df = yf.download(
+            "^GSPC",
+            period=period,
+            interval=interval,
+            progress=False,
+            auto_adjust=True,
+        )
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        return df.dropna(subset=["Close"])
+    except Exception:
+        return pd.DataFrame()
+
+
+@st.cache_data(ttl=120)
+def fetch_index_snapshot() -> pd.DataFrame:
+    """
+    Day-change snapshot for the five major indices used in the SPX dashboard.
+    Cached for 120 seconds.
+    """
+    symbols = {
+        "^GSPC": "S&P 500",
+        "^IXIC": "Nasdaq",
+        "^DJI":  "Dow Jones",
+        "^RUT":  "Russell 2000",
+        "^VIX":  "VIX",
+    }
+    rows = []
+    for sym, name in symbols.items():
+        try:
+            fi    = yf.Ticker(sym).fast_info
+            price = float(fi.last_price)
+            prev  = float(fi.previous_close)
+            chg   = price - prev
+            rows.append({
+                "Index":    name,
+                "Symbol":   sym,
+                "Price":    price,
+                "Change":   chg,
+                "Change %": chg / prev * 100,
+            })
+        except Exception:
+            continue
+    return pd.DataFrame(rows)
