@@ -8,6 +8,7 @@ from views.search import render_search_tab
 from views.munger_strategy import render_munger_tab
 from views.spx_dashboard import render_spx_dashboard_tab, render_spx_sidebar_ticker
 from views.squeeze_scanner import render_squeeze_scanner_tab
+from views.strong_buy import render_strong_buy_tab
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -39,7 +40,7 @@ with st.sidebar:
     st.markdown("---")
     active_tab = st.radio(
         "Navigation",
-        ["📈 SPX Live", "🔍 Search by Company", "📊 Weekly/Monthly Screener", "📡 Bounce Radar", "🔥 Squeeze Scanner", "🎩 Munger Watchlist", "ℹ️ About"],
+        ["📈 SPX Live", "🔍 Search by Company", "📊 Weekly/Monthly Screener", "📡 Bounce Radar", "🔥 Squeeze Scanner", "💎 Strong Buy", "🎩 Munger Watchlist", "ℹ️ About"],
         label_visibility="collapsed",
     )
     st.markdown("---")
@@ -56,6 +57,8 @@ elif active_tab == "📡 Bounce Radar":
     render_bounce_radar_tab()
 elif active_tab == "🔥 Squeeze Scanner":
     render_squeeze_scanner_tab()
+elif active_tab == "💎 Strong Buy":
+    render_strong_buy_tab()
 elif active_tab == "🎩 Munger Watchlist":
     render_munger_tab()
 elif active_tab == "ℹ️ About":

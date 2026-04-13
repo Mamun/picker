@@ -681,3 +681,124 @@ def fetch_index_snapshot() -> pd.DataFrame:
         except Exception:
             continue
     return pd.DataFrame(rows)
+
+
+# ── Strong Buy scanner ─────────────────────────────────────────────────────────
+
+@st.cache_data(ttl=3600)
+def fetch_strong_buy_candidates(
+    min_upside: float = 5.0,
+    min_analysts: int = 5,
+    max_rating: float = 2.5,
+    top_n: int = 20,
+) -> pd.DataFrame:
+    """
+    Scan SPX_TICKERS for analyst strong-buy / buy consensus setups.
+
+    yfinance recommendationMean scale:
+      1.0 = Strong Buy · 2.0 = Buy · 3.0 = Hold · 4.0 = Sell · 5.0 = Strong Sell
+
+    Strong Buy Score (max ~100)
+    ─────────────────────────────
+      Rating component   = (2.5 − mean) × 26.7   [max 40 at rating 1.0]
+      Upside component   = min(upside %, 50) × 0.5 [max 25]
+      Analyst confidence = min(analysts, 20) × 1.5  [max 30]
+      RSI entry bonus    = +5 if RSI < 60           [not overbought at entry]
+    """
+    results  = []
+    progress = st.empty()
+
+    for idx, ticker in enumerate(SPX_TICKERS):
+        progress.info(f"Scanning {ticker}… ({idx + 1}/{len(SPX_TICKERS)})")
+        try:
+            info = yf.Ticker(ticker).info
+
+            rec_mean = info.get("recommendationMean")
+            if rec_mean is None or float(rec_mean) > max_rating:
+                continue
+
+            num_analysts = int(info.get("numberOfAnalystOpinions") or 0)
+            if num_analysts < min_analysts:
+                continue
+
+            target_mean = float(info.get("targetMeanPrice") or 0)
+            target_high = float(info.get("targetHighPrice")  or 0)
+            target_low  = float(info.get("targetLowPrice")   or 0)
+            price       = float(
+                info.get("currentPrice")
+                or info.get("regularMarketPrice")
+                or 0
+            )
+
+            if price <= 0 or target_mean <= 0:
+                continue
+
+            upside_pct = (target_mean - price) / price * 100
+            if upside_pct < min_upside:
+                continue
+
+            # RSI-14 (60 days of daily bars is enough)
+            end_dt   = datetime.today()
+            start_dt = end_dt - timedelta(days=60)
+            df = yf.download(
+                ticker,
+                start=start_dt.strftime("%Y-%m-%d"),
+                end=end_dt.strftime("%Y-%m-%d"),
+                progress=False,
+                auto_adjust=True,
+            )
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            df = df.dropna(subset=["Close"])
+
+            rsi = np.nan
+            if len(df) >= 14:
+                delta    = df["Close"].diff()
+                avg_gain = delta.clip(lower=0).ewm(com=13, min_periods=14).mean()
+                avg_loss = (-delta.clip(upper=0)).ewm(com=13, min_periods=14).mean()
+                rs       = avg_gain / avg_loss.replace(0, np.nan)
+                rsi      = float((100 - 100 / (1 + rs)).iloc[-1])
+
+            # ── Strong Buy Score ───────────────────────────────────────────
+            rating_score  = max(0.0, (2.5 - float(rec_mean)) * 26.7)   # max 40
+            upside_score  = min(upside_pct, 50.0) * 0.5                # max 25
+            analyst_score = min(num_analysts, 20) * 1.5                 # max 30
+            rsi_bonus     = 5.0 if (not np.isnan(rsi) and rsi < 60) else 0.0
+            sb_score      = rating_score + upside_score + analyst_score + rsi_bonus
+
+            # ── Consensus label ────────────────────────────────────────────
+            if float(rec_mean) <= 1.5:
+                consensus = "⭐ Strong Buy"
+            elif float(rec_mean) <= 2.0:
+                consensus = "🟢 Buy"
+            else:
+                consensus = "🟡 Moderate Buy"
+
+            results.append({
+                "Ticker":       ticker,
+                "Company":      info.get("longName", ticker),
+                "Sector":       info.get("sector", "—"),
+                "Price":        round(price, 2),
+                "Target":       round(target_mean, 2),
+                "Target High":  round(target_high, 2),
+                "Target Low":   round(target_low, 2),
+                "Upside %":     round(upside_pct, 1),
+                "Rating":       round(float(rec_mean), 2),
+                "Consensus":    consensus,
+                "Analysts":     num_analysts,
+                "RSI":          round(rsi, 1) if not np.isnan(rsi) else None,
+                "SB Score":     round(sb_score, 1),
+            })
+        except Exception:
+            continue
+
+    progress.empty()
+    if not results:
+        return pd.DataFrame()
+
+    return (
+        pd.DataFrame(results)
+        .sort_values("SB Score", ascending=False)
+        .head(top_n)
+        .reset_index(drop=True)
+    )
