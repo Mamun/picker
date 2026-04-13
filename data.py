@@ -133,9 +133,11 @@ def fetch_bounce_candidates(threshold_pct: float = 5.0, top_n: int = 30) -> pd.D
     """
     results  = []
     progress = st.empty()
+    success_count = 0
+    error_count = 0
 
     for idx, ticker in enumerate(SPX_TICKERS):
-        progress.info(f"Scanning {ticker}… ({idx + 1}/{len(SPX_TICKERS)})")
+        progress.info(f"Scanning {ticker}… ({idx + 1}/{len(SPX_TICKERS)}) - Success: {success_count}, Errors: {error_count}")
         try:
             end_date   = datetime.today()
             start_date = end_date - timedelta(days=320)  # enough for MA200 warmup
@@ -147,11 +149,13 @@ def fetch_bounce_candidates(threshold_pct: float = 5.0, top_n: int = 30) -> pd.D
                 auto_adjust=True,
             )
             if df.empty or len(df) < 201:
+                error_count += 1
                 continue
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
             df = df.dropna(subset=["Close"])
             if len(df) < 201:
+                error_count += 1
                 continue
 
             price  = float(df["Close"].iloc[-1])
@@ -159,10 +163,12 @@ def fetch_bounce_candidates(threshold_pct: float = 5.0, top_n: int = 30) -> pd.D
             ma50   = float(df["Close"].rolling(50).mean().iloc[-1])
 
             if np.isnan(ma200):
+                error_count += 1
                 continue
 
             dist_pct = (price - ma200) / ma200 * 100
             if abs(dist_pct) > threshold_pct:
+                error_count += 1
                 continue
 
             # RSI-14 (Wilder EWM)
@@ -201,19 +207,27 @@ def fetch_bounce_candidates(threshold_pct: float = 5.0, top_n: int = 30) -> pd.D
                 "Trend":         trend,
                 "Bounce Score":  round(bounce_score, 1),
             })
-        except Exception:
+            success_count += 1
+        except Exception as e:
+            error_count += 1
+            # Log the error for debugging
+            st.write(f"Error processing {ticker}: {str(e)}")
             continue
 
     progress.empty()
+    st.write(f"Debug: Processed {len(SPX_TICKERS)} tickers, {success_count} successful, {error_count} errors")
     if not results:
+        st.error("No bounce candidates found. This might be due to network issues or data availability.")
         return pd.DataFrame()
 
-    return (
+    df_result = (
         pd.DataFrame(results)
         .sort_values("Bounce Score", ascending=False)
         .head(top_n)
         .reset_index(drop=True)
     )
+    st.write(f"Debug: Returning DataFrame with {len(df_result)} rows")
+    return df_result
 
 
 @st.cache_data(ttl=3600)  # 1-hour cache — short interest is reported infrequently
