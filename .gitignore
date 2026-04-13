@@ -8,5 +8,5 @@ venv/
 *.venv
 .pytest_cache/
 
-# Streamlit local config
-.streamlit/
+# Streamlit secrets only (keep config)
+.streamlit/secrets.toml
