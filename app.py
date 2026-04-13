@@ -6,14 +6,14 @@ from views.bounce_radar import render_bounce_radar_tab
 from views.screener import render_screener_tab
 from views.search import render_search_tab
 from views.munger_strategy import render_munger_tab
-from views.spx_dashboard import render_spx_dashboard_tab, render_spx_sidebar_ticker
+from views.spx_dashboard import render_spx_dashboard_tab
 from views.squeeze_scanner import render_squeeze_scanner_tab
 from views.strong_buy import render_strong_buy_tab
 from views.strong_sell import render_strong_sell_tab
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Stock Market Analyzer — Free S&P 500 Technical Analysis & Screener",
+    page_title="IndexIQ — Free S&P 500 Technical Analysis & Screener",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -34,10 +34,8 @@ if "ticker_val" not in st.session_state:
 
 # ── Sidebar navigation ────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 📈 Stock Market Analyzer")
+    st.markdown("## 📈 IndexIQ")
     st.caption("Technical Analysis Tool")
-    st.markdown("---")
-    render_spx_sidebar_ticker()
     st.markdown("---")
     active_tab = st.radio(
         "Navigation",

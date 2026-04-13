@@ -38,14 +38,14 @@ _KEYWORDS = ", ".join([
     "weekly monthly stock screener",
 ])
 
-_TITLE = "Stock Market Analyzer — Free S&P 500 Technical Analysis & Screener"
+_TITLE = "IndexIQ — Free S&P 500 Technical Analysis & Screener"
 
 _JSON_LD = """{
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "WebApplication",
-      "name": "Stock Market Analyzer",
+      "name": "IndexIQ",
       "description": "Real-time technical analysis tool for S&P 500 stocks with moving averages, RSI, Fibonacci retracement, short squeeze scanner, bounce radar, and Munger quality watchlist.",
       "applicationCategory": "FinanceApplication",
       "operatingSystem": "Any (Web Browser)",
@@ -120,14 +120,14 @@ def inject_seo() -> None:
         # Standard
         ("name",     "description",         _DESCRIPTION),
         ("name",     "keywords",             _KEYWORDS),
-        ("name",     "author",               "Stock Market Analyzer"),
+        ("name",     "author",               "IndexIQ"),
         ("name",     "robots",               "index, follow"),
         ("name",     "theme-color",          "#0F172A"),
         # OpenGraph
         ("property", "og:type",              "website"),
         ("property", "og:title",             _TITLE),
         ("property", "og:description",       _DESCRIPTION),
-        ("property", "og:site_name",         "Stock Market Analyzer"),
+        ("property", "og:site_name",         "IndexIQ"),
         ("property", "og:locale",            "en_US"),
         # Twitter Card
         ("name",     "twitter:card",         "summary"),

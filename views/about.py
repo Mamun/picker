@@ -5,7 +5,7 @@ import streamlit as st
 def render_about_tab() -> None:
     st.title("ℹ️ About This Stock Analyzer")
     st.markdown("""
-    **Stock Market Analyzer** is a free technical analysis tool designed to help traders and investors
+    **IndexIQ** is a free technical analysis tool designed to help traders and investors
     make informed decisions with real-time data.
 
     **Key Features:**
