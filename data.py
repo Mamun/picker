@@ -83,7 +83,7 @@ def fetch_spx_recommendations() -> pd.DataFrame:
     # ── SPX benchmark (fetch once for relative-strength calc) ─────────────────
     spx_ret_1m = 0.0
     try:
-        spx = yf.download("^GSPC", start=start_str, end=end_str,
+        spx = yf.download("SPY", start=start_str, end=end_str,
                           progress=False, auto_adjust=True)
         if isinstance(spx.columns, pd.MultiIndex):
             spx.columns = spx.columns.get_level_values(0)
@@ -288,16 +288,12 @@ def fetch_bounce_candidates(threshold_pct: float = 5.0, top_n: int = 30) -> pd.D
                 "Bounce Score":  round(bounce_score, 1),
             })
             success_count += 1
-        except Exception as e:
+        except Exception:
             error_count += 1
-            # Log the error for debugging
-            st.write(f"Error processing {ticker}: {str(e)}")
             continue
 
     progress.empty()
-    st.write(f"Debug: Processed {len(SPX_TICKERS)} tickers, {success_count} successful, {error_count} errors")
     if not results:
-        st.error("No bounce candidates found. This might be due to network issues or data availability.")
         return pd.DataFrame()
 
     df_result = (
@@ -684,7 +680,7 @@ def fetch_spx_quote() -> dict:
     Cached for 60 seconds.  Returns {} on error.
     """
     try:
-        fi = yf.Ticker("^GSPC").fast_info
+        fi = yf.Ticker("SPY").fast_info
         price = float(fi.last_price)
         prev  = float(fi.previous_close)
         return {
@@ -714,7 +710,7 @@ def fetch_spx_intraday(period: str = "1d", interval: str = "5m") -> pd.DataFrame
     """
     try:
         df = yf.download(
-            "^GSPC",
+            "SPY",
             period=period,
             interval=interval,
             progress=False,
@@ -734,8 +730,8 @@ def fetch_index_snapshot() -> pd.DataFrame:
     Cached for 120 seconds.
     """
     symbols = {
-        "^GSPC": "S&P 500",
-        "^IXIC": "Nasdaq",
+        "SPY":   "SPY",
+        "QQQ":   "QQQ",
         "^DJI":  "Dow Jones",
         "^RUT":  "Russell 2000",
         "^VIX":  "VIX",

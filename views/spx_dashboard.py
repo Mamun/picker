@@ -10,10 +10,10 @@ from data import fetch_index_snapshot, fetch_spx_intraday, fetch_spx_quote
 
 @st.fragment(run_every="60s")
 def render_spx_sidebar_ticker() -> None:
-    """Compact SPX card for the sidebar. Lives inside ``with st.sidebar:``."""
+    """Compact SPY card for the sidebar. Lives inside ``with st.sidebar:``."""
     quote = fetch_spx_quote()
     if not quote:
-        st.caption("SPX: unavailable")
+        st.caption("SPY: unavailable")
         return
 
     price   = quote["price"]
@@ -60,7 +60,7 @@ def render_spx_dashboard_tab() -> None:
 
     quote = fetch_spx_quote()
     if not quote:
-        st.error("Could not load SPX data. Please try again in a moment.")
+        st.error("Could not load SPY data. Please try again in a moment.")
         return
 
     # ── Top metrics ───────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ def render_spx_dashboard_tab() -> None:
     chg_pct = quote["change_pct"]
 
     m1, m2, m3, m4, m5, m6, m7 = st.columns(7)
-    m1.metric("SPX",       f"{price:,.2f}",  f"{chg:+.2f}")
+    m1.metric("SPY",       f"{price:,.2f}",  f"{chg:+.2f}")
     m2.metric("Day %",     f"{chg_pct:+.2f}%")
     m3.metric("Day High",  f"{quote['day_high']:,.2f}"  if quote["day_high"] else "—")
     m4.metric("Day Low",   f"{quote['day_low']:,.2f}"   if quote["day_low"]  else "—")
@@ -162,7 +162,7 @@ def _intraday_chart(df, prev_close: float) -> go.Figure:
         line=dict(color=lclr, width=2),
         fill="tozeroy",
         fillcolor=fclr,
-        name="SPX",
+        name="SPY",
         hovertemplate="%{x|%b %d %H:%M}<br><b>%{y:,.2f}</b><extra></extra>",
     ))
 
@@ -191,7 +191,7 @@ def _intraday_chart(df, prev_close: float) -> go.Figure:
         height=340,
         margin=dict(l=60, r=100, t=20, b=40),
         xaxis=dict(showgrid=False, title=""),
-        yaxis=dict(title="SPX", gridcolor="#1E293B"),
+        yaxis=dict(title="SPY", gridcolor="#1E293B"),
         showlegend=False,
         hovermode="x unified",
     )
@@ -214,7 +214,7 @@ def _daily_chart(df) -> go.Figure:
         low=df["Low"],   close=df["Close"],
         increasing_line_color="#22C55E",
         decreasing_line_color="#EF4444",
-        name="SPX",
+        name="SPY",
         showlegend=False,
     ), row=1, col=1)
 
