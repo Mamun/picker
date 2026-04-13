@@ -240,6 +240,7 @@ with tab_search:
         analyze_btn = st.button("Analyze", use_container_width=True, type="primary")
 
 # ── Signal engine ─────────────────────────────────────────────────────────────
+# (Defined at root level for use across both tabs)
 
 # ── Reversal pattern registry ─────────────────────────────────────────────────
 # (df_column, display_label, bullish=True/False/None, marker_symbol, color)
@@ -648,199 +649,197 @@ def build_chart(df: pd.DataFrame, fib_levels: dict, ticker: str, show_vol: bool,
 
     return fig
 
-
-# ── Main flow ─────────────────────────────────────────────────────────────────
-
-if analyze_btn or ticker:
-    if not ticker:
-        st.warning("Enter a ticker symbol in the sidebar.")
-        st.stop()
-
-    with st.spinner(f"Fetching data for **{ticker}**…"):
-        end_date   = datetime.today()
-        # Need ~200 weeks (~1400 days) warmup for MA200W plus display period
-        start_date = end_date - timedelta(days=period_days + 1450)
-        try:
-            raw = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"),
-                              end=end_date.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-        except Exception as e:
-            st.error(f"Failed to download data: {e}")
+    # ── Main flow: Search tab analysis ─────────────────────────────────────
+    
+    if analyze_btn or ticker:
+        if not ticker:
+            st.warning("Enter a ticker symbol in the sidebar.")
             st.stop()
 
-    if raw.empty:
-        st.error(f"No data found for **{ticker}**. Check the ticker symbol and try again.")
-        st.stop()
+        with st.spinner(f"Fetching data for **{ticker}**…"):
+            end_date   = datetime.today()
+            # Need ~200 weeks (~1400 days) warmup for MA200W plus display period
+            start_date = end_date - timedelta(days=period_days + 1450)
+            try:
+                raw = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"),
+                                  end=end_date.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
+            except Exception as e:
+                st.error(f"Failed to download data: {e}")
+                st.stop()
 
-    # Flatten multi-level columns yfinance ≥0.2 may return
-    if isinstance(raw.columns, pd.MultiIndex):
-        raw.columns = raw.columns.get_level_values(0)
+        if raw.empty:
+            st.error(f"No data found for **{ticker}**. Check the ticker symbol and try again.")
+            st.stop()
 
-    # Drop rows where Close is NaN (can happen with invalid/delisted tickers)
-    raw = raw.dropna(subset=["Close"])
-    if len(raw) < 2:
-        st.error(f"**{ticker}** returned insufficient price data. "
-                 "It may be an invalid ticker, delisted, or too new. "
-                 "Use the company search above to find the correct symbol.")
-        st.stop()
+        # Flatten multi-level columns yfinance ≥0.2 may return
+        if isinstance(raw.columns, pd.MultiIndex):
+            raw.columns = raw.columns.get_level_values(0)
 
-    df = compute_mas(raw)
-    # Compute 200-week MA on full history, then attach to daily df
-    df["MA200W"] = compute_weekly_ma200(df)
-    df = detect_reversal_patterns(df)
-    # Trim to requested period for display (warmup rows hidden)
-    display_df = df.tail(period_days).copy()
+        # Drop rows where Close is NaN (can happen with invalid/delisted tickers)
+        raw = raw.dropna(subset=["Close"])
+        if len(raw) < 2:
+            st.error(f"**{ticker}** returned insufficient price data. "
+                     "It may be an invalid ticker, delisted, or too new. "
+                     "Use the company search above to find the correct symbol.")
+            st.stop()
 
-    if len(display_df) < 2:
-        st.error(f"Not enough data in the selected period for **{ticker}**. "
-                 "Try a longer historical period.")
-        st.stop()
+        df = compute_mas(raw)
+        # Compute 200-week MA on full history, then attach to daily df
+        df["MA200W"] = compute_weekly_ma200(df)
+        df = detect_reversal_patterns(df)
+        # Trim to requested period for display (warmup rows hidden)
+        display_df = df.tail(period_days).copy()
 
-    fib = compute_fibonacci(display_df)
+        if len(display_df) < 2:
+            st.error(f"Not enough data in the selected period for **{ticker}**. "
+                     "Try a longer historical period.")
+            st.stop()
 
-    # Signal on the latest row
-    latest      = display_df.iloc[-1]
-    prev        = display_df.iloc[-2]
-    score, why  = signal_score(latest, prev)
-    label, color = overall_signal(score)
+        fib = compute_fibonacci(display_df)
 
-    # ── KPI row ───────────────────────────────────────────────────────────
-    info = yf.Ticker(ticker).fast_info
-    company_name = ticker
-    try:
-        company_name = yf.Ticker(ticker).info.get("longName", ticker)
-    except Exception:
-        pass
+        # Signal on the latest row
+        latest      = display_df.iloc[-1]
+        prev        = display_df.iloc[-2]
+        score, why  = signal_score(latest, prev)
+        label, color = overall_signal(score)
 
-    st.subheader(f"{company_name}  ({ticker})")
+        # ── KPI row ───────────────────────────────────────────────────────
+        info = yf.Ticker(ticker).fast_info
+        company_name = ticker
+        try:
+            company_name = yf.Ticker(ticker).info.get("longName", ticker)
+        except Exception:
+            pass
 
-    k1, k2, k3, k4, k5, k6 = st.columns(6)
-    price_now  = float(latest["Close"])
-    price_prev = float(prev["Close"])
-    change_pct = (price_now - price_prev) / price_prev * 100
+        st.subheader(f"{company_name}  ({ticker})")
 
-    k1.metric("Last Close",    f"${price_now:.2f}", f"{change_pct:+.2f}%")
-    k2.metric("MA 5",          f"${latest['MA5']:.2f}"    if not np.isnan(latest['MA5'])    else "N/A")
-    k3.metric("MA 20",         f"${latest['MA20']:.2f}"   if not np.isnan(latest['MA20'])   else "N/A")
-    k4.metric("MA 50",         f"${latest['MA50']:.2f}"   if not np.isnan(latest['MA50'])   else "N/A")
-    k5.metric("MA 200",        f"${latest['MA200']:.2f}"  if not np.isnan(latest['MA200'])  else "N/A")
-    k6.metric("MA 200W",       f"${latest['MA200W']:.2f}" if not np.isnan(latest['MA200W']) else "N/A")
+        k1, k2, k3, k4, k5, k6 = st.columns(6)
+        price_now  = float(latest["Close"])
+        price_prev = float(prev["Close"])
+        change_pct = (price_now - price_prev) / price_prev * 100
 
-    # ── Signal banner ─────────────────────────────────────────────────────
-    st.markdown(
-        f"""
-        <div style="
-            background:{color}22;
-            border:2px solid {color};
-            border-radius:12px;
-            padding:20px 28px;
-            margin:16px 0;
-        ">
-            <span style="font-size:2rem;font-weight:800;color:{color};">{label}</span>
-            <span style="font-size:1rem;color:#94A3B8;margin-left:16px;">
-                Signal Score: {score:+d}
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        k1.metric("Last Close",    f"${price_now:.2f}", f"{change_pct:+.2f}%")
+        k2.metric("MA 5",          f"${latest['MA5']:.2f}"    if not np.isnan(latest['MA5'])    else "N/A")
+        k3.metric("MA 20",         f"${latest['MA20']:.2f}"   if not np.isnan(latest['MA20'])   else "N/A")
+        k4.metric("MA 50",         f"${latest['MA50']:.2f}"   if not np.isnan(latest['MA50'])   else "N/A")
+        k5.metric("MA 200",        f"${latest['MA200']:.2f}"  if not np.isnan(latest['MA200'])  else "N/A")
+        k6.metric("MA 200W",       f"${latest['MA200W']:.2f}" if not np.isnan(latest['MA200W']) else "N/A")
 
-    # ── Reasoning ─────────────────────────────────────────────────────────
-    with st.expander("Signal Reasoning", expanded=True):
-        for r in why:
-            icon = "✅" if "bullish" in r.lower() or "above" in r.lower() or "golden" in r.lower() else "🔴"
-            st.markdown(f"- {icon} {r}")
+        # ── Signal banner ─────────────────────────────────────────────────
+        st.markdown(
+            f"""
+            <div style="
+                background:{color}22;
+                border:2px solid {color};
+                border-radius:12px;
+                padding:20px 28px;
+                margin:16px 0;
+            ">
+                <span style="font-size:2rem;font-weight:800;color:{color};">{label}</span>
+                <span style="font-size:1rem;color:#94A3B8;margin-left:16px;">
+                    Signal Score: {score:+d}
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    # ── Chart & Gap Table ─────────────────────────────────────────────────
-    chart_col, gap_col = st.columns([2, 1])
-    
-    with chart_col:
-        fig = build_chart(display_df, fib, ticker, show_volume, show_fibonacci, show_patterns)
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with gap_col:
-        st.markdown("#### Daily Gaps (Last 30 Days)")
-        gaps_df = compute_daily_gaps(display_df)
-        gaps_last_30 = gaps_df.tail(30).copy()
+        # ── Reasoning ─────────────────────────────────────────────────────
+        with st.expander("Signal Reasoning", expanded=True):
+            for r in why:
+                icon = "✅" if "bullish" in r.lower() or "above" in r.lower() or "golden" in r.lower() else "🔴"
+                st.markdown(f"- {icon} {r}")
+
+        # ── Chart & Gap Table ─────────────────────────────────────────────────
+        chart_col, gap_col = st.columns([2, 1])
         
-        # Extract display columns and track unfilled status
-        gaps_display_data = gaps_last_30[["Open", "Prev Close", "Gap", "Gap %", "Gap Filled"]].reset_index()
-        gaps_display_data.columns = ["Date", "Open", "Prev Close", "Gap $", "Gap %", "Filled"]
-        gaps_display_data["Date"] = gaps_display_data["Date"].dt.strftime("%m-%d")
-        gaps_display_data = gaps_display_data.sort_values("Date", ascending=False).reset_index(drop=True)
+        with chart_col:
+            fig = build_chart(display_df, fib, ticker, show_volume, show_fibonacci, show_patterns)
+            st.plotly_chart(fig, use_container_width=True)
         
-        # Create colored display: highlight unfilled gaps in red
-        gaps_for_display = gaps_display_data.drop("Filled", axis=1)
-        
-        # Apply styling: red background for unfilled gaps
-        def highlight_unfilled(row):
-            is_unfilled = gaps_display_data.loc[row.name, "Filled"] is False
-            return ["background-color: rgba(239, 68, 68, 0.3); color: #EF4444; font-weight: bold"] * len(row) if is_unfilled else [""] * len(row)
-        
-        styled_df = gaps_for_display.style.apply(highlight_unfilled, axis=1)
-        st.dataframe(styled_df, use_container_width=True, hide_index=True, height=600)
+        with gap_col:
+            st.markdown("#### Daily Gaps (Last 30 Days)")
+            gaps_df = compute_daily_gaps(display_df)
+            gaps_last_30 = gaps_df.tail(30).copy()
+            
+            # Extract display columns and track unfilled status
+            gaps_display_data = gaps_last_30[["Open", "Prev Close", "Gap", "Gap %", "Gap Filled"]].reset_index()
+            gaps_display_data.columns = ["Date", "Open", "Prev Close", "Gap $", "Gap %", "Filled"]
+            gaps_display_data["Date"] = gaps_display_data["Date"].dt.strftime("%m-%d")
+            gaps_display_data = gaps_display_data.sort_values("Date", ascending=False).reset_index(drop=True)
+            
+            # Create colored display: highlight unfilled gaps in red
+            gaps_for_display = gaps_display_data.drop("Filled", axis=1)
+            
+            # Apply styling: red background for unfilled gaps
+            def highlight_unfilled(row):
+                is_unfilled = gaps_display_data.loc[row.name, "Filled"] is False
+                return ["background-color: rgba(239, 68, 68, 0.3); color: #EF4444; font-weight: bold"] * len(row) if is_unfilled else [""] * len(row)
+            
+            styled_df = gaps_for_display.style.apply(highlight_unfilled, axis=1)
+            st.dataframe(styled_df, use_container_width=True, hide_index=True, height=600)
 
-    if show_patterns:
-        pattern_rows = []
-        for col, label, bullish, *_ in REVERSAL_PATTERNS:
-            count = int(display_df[col].sum()) if col in display_df.columns else 0
-            if count:
-                pattern_rows.append({
-                    "Pattern": label,
-                    "Count": count,
-                    "Bias": "Bullish" if bullish is True else "Bearish" if bullish is False else "Neutral",
-                })
+        if show_patterns:
+            pattern_rows = []
+            for col, label, bullish, *_ in REVERSAL_PATTERNS:
+                count = int(display_df[col].sum()) if col in display_df.columns else 0
+                if count:
+                    pattern_rows.append({
+                        "Pattern": label,
+                        "Count": count,
+                        "Bias": "Bullish" if bullish is True else "Bearish" if bullish is False else "Neutral",
+                    })
 
-        if pattern_rows:
-            st.markdown("#### Reversal Patterns Detected")
-            st.dataframe(pd.DataFrame(pattern_rows), use_container_width=True, hide_index=True)
-        else:
-            st.info("No reversal patterns were detected in the selected period.")
+            if pattern_rows:
+                st.markdown("#### Reversal Patterns Detected")
+                st.dataframe(pd.DataFrame(pattern_rows), use_container_width=True, hide_index=True)
+            else:
+                st.info("No reversal patterns were detected in the selected period.")
 
-    # ── Fibonacci table ───────────────────────────────────────────────────
-    if show_fibonacci:
-        st.markdown("#### Fibonacci Retracement Levels (200-session range)")
-        fib_df = pd.DataFrame([
-            {"Level": k, "Price": f"${v:.2f}",
-             "vs Last Close": f"{(v - price_now) / price_now * 100:+.2f}%",
-             "Signal": "🟢 Support (Bullish)" if v < price_now else "🔴 Resistance (Bearish)"}
-            for k, v in fib.items()
-        ])
-        st.dataframe(fib_df, use_container_width=True, hide_index=True)
+        # ── Fibonacci table ───────────────────────────────────────────────
+        if show_fibonacci:
+            st.markdown("#### Fibonacci Retracement Levels (200-session range)")
+            fib_df = pd.DataFrame([
+                {"Level": k, "Price": f"${v:.2f}",
+                 "vs Last Close": f"{(v - price_now) / price_now * 100:+.2f}%",
+                 "Signal": "🟢 Support (Bullish)" if v < price_now else "🔴 Resistance (Bearish)"}
+                for k, v in fib.items()
+            ])
+            st.dataframe(fib_df, use_container_width=True, hide_index=True)
 
-    # ── MA summary table ──────────────────────────────────────────────────
-    st.markdown("#### Moving Average Summary")
-    ma_rows = []
-    for p in MA_PERIODS:
-        val = latest.get(f"MA{p}", np.nan)
-        if np.isnan(val):
-            continue
-        diff_pct = (price_now - val) / val * 100
-        stance = "Above" if price_now > val else "Below"
-        signal = "🟢 Bullish (Uptrend)" if price_now > val else "🔴 Bearish (Downtrend)"
-        ma_rows.append({
-            "MA Period": f"MA {p} (daily)",
-            "Value": f"${val:.2f}",
-            "Price vs MA": f"{diff_pct:+.2f}%",
-            "Stance": stance,
-            "Signal": signal,
-        })
-    # 200-week MA row
-    val_w = latest.get("MA200W", np.nan)
-    if not np.isnan(val_w):
-        diff_pct_w = (price_now - val_w) / val_w * 100
-        signal_w = "🟢 Bullish (Long-term Uptrend)" if price_now > val_w else "🔴 Bearish (Long-term Downtrend)"
-        ma_rows.append({
-            "MA Period": "MA 200 (weekly)",
-            "Value": f"${val_w:.2f}",
-            "Price vs MA": f"{diff_pct_w:+.2f}%",
-            "Stance": "Above" if price_now > val_w else "Below",
-            "Signal": signal_w,
-        })
-    ma_df = pd.DataFrame(ma_rows)
-    st.dataframe(ma_df, use_container_width=True, hide_index=True)
+        # ── MA summary table ──────────────────────────────────────────────
+        st.markdown("#### Moving Average Summary")
+        ma_rows = []
+        for p in MA_PERIODS:
+            val = latest.get(f"MA{p}", np.nan)
+            if np.isnan(val):
+                continue
+            diff_pct = (price_now - val) / val * 100
+            stance = "Above" if price_now > val else "Below"
+            signal = "🟢 Bullish (Uptrend)" if price_now > val else "🔴 Bearish (Downtrend)"
+            ma_rows.append({
+                "MA Period": f"MA {p} (daily)",
+                "Value": f"${val:.2f}",
+                "Price vs MA": f"{diff_pct:+.2f}%",
+                "Stance": stance,
+                "Signal": signal,
+            })
+        # 200-week MA row
+        val_w = latest.get("MA200W", np.nan)
+        if not np.isnan(val_w):
+            diff_pct_w = (price_now - val_w) / val_w * 100
+            signal_w = "🟢 Bullish (Long-term Uptrend)" if price_now > val_w else "🔴 Bearish (Long-term Downtrend)"
+            ma_rows.append({
+                "MA Period": "MA 200 (weekly)",
+                "Value": f"${val_w:.2f}",
+                "Price vs MA": f"{diff_pct_w:+.2f}%",
+                "Stance": "Above" if price_now > val_w else "Below",
+                "Signal": signal_w,
+            })
+        ma_df = pd.DataFrame(ma_rows)
+        st.dataframe(ma_df, use_container_width=True, hide_index=True)
 
-else:
-    with tab_analyzer:
+    else:
         st.info("Enter a ticker in the sidebar and click **Analyze**.")
 
 # ── Tab 2: Weekly/Monthly Screener ────────────────────────────────────────────
