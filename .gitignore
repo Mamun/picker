@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.venv
+.pytest_cache/
+
+# Streamlit local config
+.streamlit/

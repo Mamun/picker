@@ -93,9 +93,97 @@ with st.sidebar:
     period_days = period_options[period_label]
     show_volume = st.checkbox("Show Volume", value=True)
     show_fibonacci = st.checkbox("Show Fibonacci Levels", value=True)
+    show_patterns = st.checkbox("Show Reversal Patterns", value=True)
     analyze_btn = st.button("Analyze", use_container_width=True, type="primary")
 
 # ── Signal engine ─────────────────────────────────────────────────────────────
+
+# ── Reversal pattern registry ─────────────────────────────────────────────────
+# (df_column, display_label, bullish=True/False/None, marker_symbol, color)
+REVERSAL_PATTERNS = [
+    ("pat_hammer",       "Hammer",            True,  "triangle-up",   "#4ADE80"),
+    ("pat_bull_engulf",  "Bullish Engulfing", True,  "triangle-up",   "#16A34A"),
+    ("pat_morning_star", "Morning Star",      True,  "star",          "#86EFAC"),
+    ("pat_shoot_star",   "Shooting Star",     False, "triangle-down", "#F97316"),
+    ("pat_bear_engulf",  "Bearish Engulfing", False, "triangle-down", "#EF4444"),
+    ("pat_evening_star", "Evening Star",      False, "star",          "#DC2626"),
+    ("pat_doji",         "Doji",              None,  "diamond",       "#FACC15"),
+]
+
+
+def detect_reversal_patterns(df: pd.DataFrame) -> pd.DataFrame:
+    o, h, l, c = df["Open"], df["High"], df["Low"], df["Close"]
+    max_oc = pd.concat([o, c], axis=1).max(axis=1)
+    min_oc = pd.concat([o, c], axis=1).min(axis=1)
+    body        = max_oc - min_oc
+    upper_wick  = h - max_oc
+    lower_wick  = min_oc - l
+    full_range  = h - l
+    bullish_c   = c > o
+    bearish_c   = c < o
+
+    # ── Hammer ────────────────────────────────────────────────────────────
+    # Small body near top, lower wick ≥ 2× body, tiny upper wick
+    df["pat_hammer"] = (
+        (body > 0) &
+        (lower_wick >= 2 * body) &
+        (upper_wick <= 0.25 * body)
+    )
+
+    # ── Shooting Star ─────────────────────────────────────────────────────
+    # Small body near bottom, upper wick ≥ 2× body, tiny lower wick
+    df["pat_shoot_star"] = (
+        (body > 0) &
+        (upper_wick >= 2 * body) &
+        (lower_wick <= 0.25 * body)
+    )
+
+    # ── Bullish Engulfing ─────────────────────────────────────────────────
+    prev_max = max_oc.shift(1)
+    prev_min = min_oc.shift(1)
+    df["pat_bull_engulf"] = (
+        bullish_c &
+        bearish_c.shift(1) &
+        (o < prev_min) &
+        (c > prev_max)
+    )
+
+    # ── Bearish Engulfing ─────────────────────────────────────────────────
+    df["pat_bear_engulf"] = (
+        bearish_c &
+        bullish_c.shift(1) &
+        (o > prev_max) &
+        (c < prev_min)
+    )
+
+    # ── Morning Star (3-candle bullish) ───────────────────────────────────
+    # Day-1: large bearish; Day-2: small body (indecision); Day-3: bullish > Day-1 midpoint
+    d1_mid = (o.shift(2) + c.shift(2)) / 2
+    df["pat_morning_star"] = (
+        bearish_c.shift(2) &
+        (body.shift(1) <= 0.35 * body.shift(2)) &
+        bullish_c &
+        (c > d1_mid)
+    )
+
+    # ── Evening Star (3-candle bearish) ───────────────────────────────────
+    d1_mid_e = (o.shift(2) + c.shift(2)) / 2
+    df["pat_evening_star"] = (
+        bullish_c.shift(2) &
+        (body.shift(1) <= 0.35 * body.shift(2)) &
+        bearish_c &
+        (c < d1_mid_e)
+    )
+
+    # ── Doji ──────────────────────────────────────────────────────────────
+    # Body ≤ 5 % of full range; some range must exist
+    df["pat_doji"] = (
+        (full_range > 0) &
+        (body <= 0.05 * full_range)
+    )
+
+    return df
+
 
 MA_PERIODS = [5, 20, 50, 100, 200]
 MA_COLORS = {
@@ -246,7 +334,7 @@ def find_crosses(df: pd.DataFrame) -> tuple[pd.DatetimeIndex, pd.DatetimeIndex]:
     return golden, death
 
 
-def build_chart(df: pd.DataFrame, fib_levels: dict, ticker: str, show_vol: bool, show_fib: bool) -> go.Figure:
+def build_chart(df: pd.DataFrame, fib_levels: dict, ticker: str, show_vol: bool, show_fib: bool, show_patterns: bool) -> go.Figure:
     rows = 2 if show_vol else 1
     row_heights = [0.7, 0.3] if show_vol else [1.0]
 
@@ -312,6 +400,31 @@ def build_chart(df: pd.DataFrame, fib_levels: dict, ticker: str, show_vol: bool,
             textfont=dict(color="#FF4444", size=10),
             hovertemplate="Death Cross<br>%{x|%Y-%m-%d}<br>MA50: %{y:.2f}<extra></extra>",
         ), row=1, col=1)
+
+    if show_patterns:
+        for col, label, bullish, symbol, color in REVERSAL_PATTERNS:
+            if col not in df.columns:
+                continue
+            mask = df[col].fillna(False)
+            if not mask.any():
+                continue
+
+            if bullish is True:
+                y_values = df.loc[mask, "Low"] * 0.985
+            elif bullish is False:
+                y_values = df.loc[mask, "High"] * 1.015
+            else:
+                y_values = df.loc[mask, "Close"]
+
+            fig.add_trace(go.Scatter(
+                x=df.index[mask],
+                y=y_values,
+                mode="markers",
+                name=label,
+                marker=dict(symbol=symbol, size=14, color=color,
+                            line=dict(color="#FFFFFF", width=1)),
+                hovertemplate=f"{label}<br>%{{x|%Y-%m-%d}}<br>Close: $%{{y:.2f}}<extra></extra>",
+            ), row=1, col=1)
 
     # Fibonacci retracement lines
     if show_fib:
@@ -384,6 +497,7 @@ if analyze_btn or ticker:
     df = compute_mas(raw)
     # Compute 200-week MA on full history, then attach to daily df
     df["MA200W"] = compute_weekly_ma200(df)
+    df = detect_reversal_patterns(df)
     # Trim to requested period for display (warmup rows hidden)
     display_df = df.tail(period_days).copy()
 
@@ -448,8 +562,25 @@ if analyze_btn or ticker:
             st.markdown(f"- {icon} {r}")
 
     # ── Chart ─────────────────────────────────────────────────────────────
-    fig = build_chart(display_df, fib, ticker, show_volume, show_fibonacci)
+    fig = build_chart(display_df, fib, ticker, show_volume, show_fibonacci, show_patterns)
     st.plotly_chart(fig, use_container_width=True)
+
+    if show_patterns:
+        pattern_rows = []
+        for col, label, bullish, *_ in REVERSAL_PATTERNS:
+            count = int(display_df[col].sum()) if col in display_df.columns else 0
+            if count:
+                pattern_rows.append({
+                    "Pattern": label,
+                    "Count": count,
+                    "Bias": "Bullish" if bullish is True else "Bearish" if bullish is False else "Neutral",
+                })
+
+        if pattern_rows:
+            st.markdown("#### Reversal Patterns Detected")
+            st.dataframe(pd.DataFrame(pattern_rows), use_container_width=True, hide_index=True)
+        else:
+            st.info("No reversal patterns were detected in the selected period.")
 
     # ── Fibonacci table ───────────────────────────────────────────────────
     if show_fibonacci:
