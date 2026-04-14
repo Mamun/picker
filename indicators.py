@@ -82,29 +82,42 @@ def compute_daily_gaps(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def patch_today_gap(gaps_df: pd.DataFrame, quote: dict) -> pd.DataFrame:
-    """Patch the most recent gap row with live intraday High/Low from the quote,
-    so today's gap fill status reflects real-time data instead of showing Pending."""
+    """Patch the most recent gap row using live quote data.
+
+    Fixes two issues:
+    1. Prev Close mismatch — yfinance historical OHLC and fast_info.previous_close
+       are different data endpoints and can diverge. Override with fast_info value.
+    2. Gap fill status — historical data has no future bars for today, so gap fill
+       is always Unknown. Use intraday day_high/day_low to resolve it in real-time.
+    """
     if gaps_df.empty:
         return gaps_df
 
-    day_high = quote.get("day_high") or 0
-    day_low  = quote.get("day_low")  or 0
-    if not day_high or not day_low:
+    prev_close = quote.get("prev_close") or 0
+    day_high   = quote.get("day_high")   or 0
+    day_low    = quote.get("day_low")    or 0
+
+    if not prev_close:
         return gaps_df
 
     gaps_df  = gaps_df.copy()
     last_idx = gaps_df.index[-1]
-    gap        = gaps_df.at[last_idx, "Gap"]
-    prev_close = gaps_df.at[last_idx, "Prev Close"]
+    today_open = float(gaps_df.at[last_idx, "Open"])
 
-    if pd.isna(gap) or gap == 0 or pd.isna(prev_close):
+    # Override Prev Close with the authoritative fast_info value
+    gaps_df.at[last_idx, "Prev Close"] = round(prev_close, 2)
+    gap     = round(today_open - prev_close, 2)
+    gap_pct = round(gap / prev_close * 100, 2)
+    gaps_df.at[last_idx, "Gap"]   = gap
+    gaps_df.at[last_idx, "Gap %"] = gap_pct
+
+    if not day_high or not day_low or gap == 0:
         return gaps_df
 
     # Determine fill using live intraday range
     is_filled = (day_low <= prev_close) if gap > 0 else (day_high >= prev_close)
-
     gaps_df.at[last_idx, "Gap Filled"]    = is_filled
-    gaps_df.at[last_idx, "Gap Confirmed"] = True   # live data = no need to wait for future bars
+    gaps_df.at[last_idx, "Gap Confirmed"] = True
     return gaps_df
 
 
