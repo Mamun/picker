@@ -33,6 +33,26 @@ pages = [
 
 pg = st.navigation(pages)
 
+# ── Top banner ────────────────────────────────────────────────────────────────
+st.markdown("""
+<div style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: #0F172A;
+    padding: 10px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    font-family: sans-serif;
+">
+    <span style="font-size: 1.2rem; font-weight: 700; color: #F8FAFC; letter-spacing: 0.5px;">
+        IndexIQ
+    </span>
+</div>
+<div style="margin-top: 48px;"></div>
+""", unsafe_allow_html=True)
+
 # Hide utility pages (shareable embeds) from the sidebar nav
 st.markdown("""
 <style>

@@ -6,7 +6,7 @@ from indicators import compute_daily_gaps, compute_rsi
 
 
 def render_spy_gap_table_page() -> None:
-    st.title("📋 SPY Gap Table")
+    st.title("📋 SPY Gap Fill Tracker")
     st.caption("Daily gap fill tracker for SPY — last 30 trading days")
 
     with st.spinner("Loading SPY data…"):
