@@ -252,31 +252,15 @@ def _render_spy_gap_table(daily_df) -> None:
     head_col, btn_col = st.columns([8, 1])
     head_col.markdown("#### Daily Gaps (Last 30 Days)")
     with btn_col:
-        st.html("""
-        <button onclick="
-          var url = (window.parent.location.origin || window.location.ancestorOrigins?.[0] || window.location.origin) + '/spy-gaps';
-          navigator.clipboard.writeText(url)
-            .then(function() {
-              var b = document.getElementById('sb');
-              b.innerHTML = '✅ Copied!';
-              b.style.color = '#22C55E';
-              b.style.borderColor = '#22C55E';
-              setTimeout(function() {
-                b.innerHTML = '🔗 Share';
-                b.style.color = '#94A3B8';
-                b.style.borderColor = '#334155';
-              }, 2000);
-            })
-            .catch(function() {
-              var b = document.getElementById('sb');
-              b.innerHTML = window.location.origin + '/spy-gaps';
-            });
-        " id="sb" style="
-          background:#0F172A;color:#94A3B8;border:1px solid #334155;
-          border-radius:6px;padding:5px 10px;cursor:pointer;
-          font-size:13px;white-space:nowrap;width:100%;
-        ">🔗 Share</button>
-        """)
+        with st.popover("🔗 Share", use_container_width=True):
+            import urllib.parse
+            try:
+                parsed = urllib.parse.urlparse(st.context.url)
+                share_url = f"{parsed.scheme}://{parsed.netloc}/spy-gaps"
+            except Exception:
+                share_url = "/spy-gaps"
+            st.code(share_url, language=None)
+            st.caption("Copy the link above to share this page.")
     gaps_df = compute_daily_gaps(daily_df)
 
     # Next-day price direction: shift Close up by 1 so each row shows tomorrow's close

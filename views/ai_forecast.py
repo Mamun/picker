@@ -13,6 +13,16 @@ from data.market import fetch_spx_quote
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _share_url(path: str) -> str:
+    """Build an absolute share URL using the current page's origin."""
+    try:
+        import urllib.parse
+        parsed = urllib.parse.urlparse(st.context.url)
+        return f"{parsed.scheme}://{parsed.netloc}{path}"
+    except Exception:
+        return path
+
+
 def _is_market_open() -> bool:
     et  = timezone(timedelta(hours=-4))
     now = datetime.now(et)
@@ -130,31 +140,9 @@ def render_ai_forecast(gaps_df: pd.DataFrame, show_share_btn: bool = True) -> No
     head_col.markdown("### 🤖 AI SPY Forecast")
     if show_share_btn:
         with btn_col:
-            st.html("""
-            <button onclick="
-              var url = (window.parent.location.origin || window.location.ancestorOrigins?.[0] || window.location.origin) + '/spy-ai-forecast';
-              navigator.clipboard.writeText(url)
-                .then(function() {
-                  var b = document.getElementById('fb');
-                  b.innerHTML = '✅ Copied!';
-                  b.style.color = '#22C55E';
-                  b.style.borderColor = '#22C55E';
-                  setTimeout(function() {
-                    b.innerHTML = '🔗 Share';
-                    b.style.color = '#94A3B8';
-                    b.style.borderColor = '#334155';
-                  }, 2000);
-                })
-                .catch(function() {
-                  var b = document.getElementById('fb');
-                  b.innerHTML = window.location.origin + '/spy-ai-forecast';
-                });
-            " id="fb" style="
-              background:#0F172A;color:#94A3B8;border:1px solid #334155;
-              border-radius:6px;padding:5px 10px;cursor:pointer;
-              font-size:13px;white-space:nowrap;width:100%;
-            ">🔗 Share</button>
-            """)
+            with st.popover("🔗 Share", use_container_width=True):
+                st.code(_share_url("/spy-ai-forecast"), language=None)
+                st.caption("Copy the link above to share this forecast.")
 
     if not api_key:
         st.warning(
