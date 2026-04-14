@@ -57,7 +57,7 @@ def fetch_spx_intraday(period: str = "1d", interval: str = "5m") -> pd.DataFrame
             period=period,
             interval=interval,
             progress=False,
-            auto_adjust=True,
+            auto_adjust=False,
         )
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
