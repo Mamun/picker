@@ -73,7 +73,11 @@ def _build_context(gaps_df: pd.DataFrame, quote: dict) -> str:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def _fetch_ai_prediction(context_json: str) -> list[dict]:
+def _fetch_ai_prediction(cache_key: str, _context_json: str) -> list[dict]:
+    """cache_key = "YYYY-MM-DD-HH" — stable for one hour, so page refreshes
+    hit the cache. _context_json is excluded from the cache key (leading _)
+    but still passed to the API when the cache is cold."""
+    context_json = _context_json
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         return []
@@ -159,10 +163,11 @@ def render_ai_forecast(gaps_df: pd.DataFrame, show_share_btn: bool = True) -> No
         st.info(f"Market closed (weekend). Next update at {_next_market_open_str()}.", icon="🗓️")
 
     context_json = _build_context(gaps_df, quote)
+    cache_key    = now_et.strftime("%Y-%m-%d-%H")   # changes once per hour
 
     with st.spinner("Generating AI forecast…"):
         try:
-            predictions = _fetch_ai_prediction(context_json)
+            predictions = _fetch_ai_prediction(cache_key, context_json)
         except Exception as e:
             st.error(f"AI forecast unavailable: {e}")
             return
