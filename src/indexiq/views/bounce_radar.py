@@ -16,12 +16,12 @@ def render_bounce_radar_tab() -> None:
     c1, c2, c3 = st.columns([2, 2, 1])
     threshold = c1.slider(
         "Max distance from MA 200 (%)",
-        min_value=1, max_value=10, value=5, step=1,
+        min_value=1, max_value=10, value=10, step=1,
         help="Only include stocks whose price is within this % of the 200-day MA",
     )
     top_n = c2.slider(
         "Max results to show",
-        min_value=10, max_value=50, value=30, step=5,
+        min_value=10, max_value=50, value=50, step=5,
     )
     scan_btn = c3.button("🔍 Scan", width='stretch', type="primary")
 
