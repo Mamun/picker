@@ -13,7 +13,6 @@ from indexiq.indicators import (
     detect_reversal_patterns,
 )
 from indexiq.signals import overall_signal, signal_score
-from indexiq.affiliate import render_trade_buttons
 
 _PERIODS = {
     "1M":  30,
@@ -123,8 +122,6 @@ def render_analyzer_tab() -> None:
     # ── Overview card ─────────────────────────────────────────────────────────
     st.markdown(f"#### {company_name}  ({ticker})")
     _render_stock_summary(latest, prev, df, label, color, score)
-
-    render_trade_buttons(ticker)
 
     st.markdown("---")
 
