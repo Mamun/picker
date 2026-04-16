@@ -9,6 +9,7 @@ Sub-modules:
 from indexiq.data.fetch import fetch_ohlcv, get_company_name, search_companies
 from indexiq.data.market import (
     fetch_index_snapshot,
+    fetch_put_call_ratio,
     fetch_spx_intraday,
     fetch_spx_quote,
     fetch_vix_history,
@@ -32,6 +33,7 @@ __all__ = [
     "get_company_name",
     "search_companies",
     "fetch_index_snapshot",
+    "fetch_put_call_ratio",
     "fetch_spx_intraday",
     "fetch_spx_quote",
     "fetch_vix_history",

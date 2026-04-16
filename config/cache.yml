@@ -8,6 +8,7 @@ market:
   fetch_vix_ohlc: 3600          # VIX OHLC — refresh hourly
   fetch_vix_history: 3600       # SPY + VIX dual-axis history — refresh hourly
   fetch_index_snapshot: 120     # Major indices strip — refresh every 2 minutes
+  fetch_put_call_ratio: 3600    # SPY options put/call ratio — refresh hourly
 
 screeners:
   fetch_spx_recommendations: 3600    # Weekly/monthly candle screener

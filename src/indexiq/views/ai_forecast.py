@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 import pandas as pd
 import streamlit as st
 
-from indexiq.data.market import fetch_spx_intraday, fetch_spx_quote, fetch_vix_history
+from indexiq.data.market import fetch_put_call_ratio, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history
 from indexiq.models.ai_forecast import (
     build_forecast_context,
     fetch_ai_prediction,
@@ -73,7 +73,8 @@ def render_ai_forecast(gaps_df: pd.DataFrame, show_share_btn: bool = True) -> No
 
     daily_df     = fetch_spx_intraday(period="1y", interval="1d")
     vix_df       = fetch_vix_history(period="1y")
-    context_json = build_forecast_context(gaps_df, quote, daily_df=daily_df, vix_df=vix_df)
+    pc_data      = fetch_put_call_ratio()
+    context_json = build_forecast_context(gaps_df, quote, daily_df=daily_df, vix_df=vix_df, pc_data=pc_data)
 
     with st.spinner("Generating AI forecast…"):
         try:

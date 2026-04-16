@@ -43,6 +43,7 @@ def build_forecast_context(
     quote: dict,
     daily_df: pd.DataFrame | None = None,
     vix_df: pd.DataFrame | None = None,
+    pc_data: dict | None = None,
 ) -> str:
     """Build the JSON context string passed to the AI forecast prompt.
 
@@ -52,6 +53,7 @@ def build_forecast_context(
     - 20-day average volume and today's volume vs that average (from daily_df)
     - 52-week high / low and % distance from each (from daily_df)
     - VIX level, 5-day change, regime, and vs 1-year average (from vix_df)
+    - SPY put/call ratio from options open interest (from pc_data)
     """
     completed_gaps = gaps_df.iloc[:-1]
     rows = []
@@ -149,6 +151,15 @@ def build_forecast_context(
             "vix_vs_1y_avg":  round(vix_now - vix_avg, 2),
         }
 
+    # ── Put/Call ratio ─────────────────────────────────────────────────────────
+    if pc_data:
+        context["put_call_ratio"] = {
+            "ratio":  pc_data["ratio"],
+            "signal": pc_data["signal"],
+            # interpretation: > 1.0 = more puts than calls = fear = contrarian bullish
+            # < 0.7 = complacency = contrarian bearish
+        }
+
     return json.dumps(context)
 
 
@@ -175,7 +186,8 @@ def fetch_ai_prediction(cache_key: str, _context_json: str) -> list[dict]:
         "(3) Price vs MA50 and MA20 — short-term momentum and mean-reversion zones; "
         "(4) RSI — overbought ≥ 70, oversold ≤ 30; "
         "(5) Gap magnetism — unfilled gaps act as price targets; "
-        "(6) Volume confirmation — high volume on a directional move adds conviction. "
+        "(6) Volume confirmation — high volume on a directional move adds conviction; "
+        "(7) Put/call ratio — above 1.0 = excess put hedging = contrarian bullish; below 0.7 = complacency = contrarian bearish. "
         "In Elevated or Extreme Fear VIX regimes, prefer Low or Medium confidence and widen range_low/range_high. "
         "Do not guess macro events. Reason only from the data provided. "
         "Your output must be a valid JSON array — nothing else, no markdown, no explanation."

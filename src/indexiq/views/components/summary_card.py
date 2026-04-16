@@ -128,12 +128,16 @@ def render_spy_summary_card(
     chg_pct: float,
     daily_df: pd.DataFrame,
 ) -> None:
-    """Two-row overview card for the SPY Live Dashboard."""
-    rsi_val = ma5 = ma50 = ma100 = ma200 = cross_label = cross_clr = None
-    if not daily_df.empty:
-        from indexiq.models.indicators import compute_rsi
-        rsi_val = float(compute_rsi(daily_df).iloc[-1])
+    """
+    SPY technical snapshot — single row, unique info only.
+    (Price/RSI/Day High-Low are shown in the header and gap table.)
 
+    Single row: 52W range gauge · volume vs 20D avg · MA trend · MA5/50/100/200
+    """
+    ma5 = ma50 = ma100 = ma200 = cross_label = cross_clr = None
+    vol_avg_20d = None
+
+    if not daily_df.empty:
         def _ma(p):
             return float(daily_df["Close"].rolling(p).mean().iloc[-1]) if len(daily_df) >= p else None
 
@@ -145,34 +149,63 @@ def render_spy_summary_card(
             cross_label = "🌟 Golden Cross" if ma50 > ma200 else "💀 Death Cross"
             cross_clr   = _UP if ma50 > ma200 else _DN
 
-    # Row 1 — price data
-    chg_clr    = _UP if chg >= 0 else _DN
-    arrow      = "▲" if chg >= 0 else "▼"
-    vol        = quote.get("volume", 0)
-    prev_close = quote.get("prev_close", 0)
+        if "Volume" in daily_df.columns and len(daily_df) >= 20:
+            vol_avg_20d = float(daily_df["Volume"].rolling(20).mean().iloc[-1])
 
-    price_row = "".join([
-        _cell("SPY Price",  f"{price:,.2f}", f"{arrow} {abs(chg):.2f} ({chg_pct:+.2f}%)", chg_clr),
-        _cell("Prev Close", f"{prev_close:,.2f}" if prev_close else "—"),
-        _cell("Day High",   f"{quote['day_high']:,.2f}" if quote["day_high"] else "—"),
-        _cell("Day Low",    f"{quote['day_low']:,.2f}"  if quote["day_low"]  else "—"),
-        _cell("52W High",   f"{quote['w52_high']:,.2f}" if quote["w52_high"] else "—"),
-        _cell("52W Low",    f"{quote['w52_low']:,.2f}"  if quote["w52_low"]  else "—"),
-        _cell("Volume",     f"{vol/1_000_000:.1f}M"     if vol else "—"),
-    ])
+    w52_hi  = quote.get("w52_high", 0) or 0
+    w52_lo  = quote.get("w52_low",  0) or 0
+    vol_now = quote.get("volume",   0) or 0
 
-    # Row 2 — technicals
-    if rsi_val is not None:
-        rsi_clr  = _DN if rsi_val >= 70 else _UP if rsi_val <= 30 else _NEU
-        rsi_sub  = "Overbought" if rsi_val >= 70 else "Oversold" if rsi_val <= 30 else "Neutral"
-        rsi_cell = _cell("RSI (14)", f"{rsi_val:.1f}", rsi_sub, rsi_clr)
+    # ── 52W range gauge (compact inline) ─────────────────────────────────────
+    if w52_hi > w52_lo and price:
+        pos_pct     = (price - w52_lo) / (w52_hi - w52_lo) * 100
+        pct_from_hi = (price / w52_hi - 1) * 100
+        bar_filled  = max(2, min(98, round(pos_pct)))
+        bar_clr     = _UP if pos_pct >= 50 else _DN
+        range_cell  = (
+            f'<div style="padding:8px 18px;border-right:1px solid {_SEP};min-width:240px">'
+            f'<div style="font-size:11px;color:{_MUT};text-transform:uppercase;'
+            f'letter-spacing:.05em;margin-bottom:5px">52W Range</div>'
+            f'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
+            f'  <span style="font-size:10px;color:{_MUT};white-space:nowrap">${w52_lo:,.0f}</span>'
+            f'  <div style="width:90px;height:5px;border-radius:3px;background:#1E293B;'
+            f'flex-shrink:0;position:relative">'
+            f'    <div style="width:{bar_filled}%;height:100%;border-radius:3px;'
+            f'background:{bar_clr}"></div>'
+            f'    <div style="position:absolute;top:-3px;left:{bar_filled}%;'
+            f'transform:translateX(-50%);width:2px;height:11px;background:#F1F5F9;'
+            f'border-radius:1px"></div>'
+            f'  </div>'
+            f'  <span style="font-size:10px;color:{_MUT};white-space:nowrap">${w52_hi:,.0f}</span>'
+            f'</div>'
+            f'<div style="font-size:14px;font-weight:700;color:{_VAL}">'
+            f'  {pos_pct:.1f}%'
+            f'  <span style="font-size:11px;color:{_MUT};font-weight:400">'
+            f'  &nbsp;within range &nbsp;·&nbsp; {pct_from_hi:+.1f}% vs hi</span>'
+            f'</div>'
+            f'</div>'
+        )
     else:
-        rsi_cell = ""
+        range_cell = ""
 
+    # ── Volume vs 20D avg ─────────────────────────────────────────────────────
+    if vol_now and vol_avg_20d:
+        vol_vs_avg = (vol_now / vol_avg_20d - 1) * 100
+        vol_clr    = _UP if vol_vs_avg >= 20 else _DN if vol_vs_avg <= -20 else _MUT
+        vol_cell   = _cell("Volume", f"{vol_now/1_000_000:.1f}M",
+                           f"{vol_vs_avg:+.0f}% vs 20D avg", vol_clr)
+    elif vol_now:
+        vol_cell   = _cell("Volume", f"{vol_now/1_000_000:.1f}M")
+    else:
+        vol_cell   = _cell("Volume", "—")
+
+    # ── MA alignment ──────────────────────────────────────────────────────────
     cross_cell = _cell("MA Trend", cross_label, "MA50 vs MA200", cross_clr) if cross_label else ""
 
-    tech_row = "".join([
-        rsi_cell,
+    # ── Single combined row ───────────────────────────────────────────────────
+    single_row = "".join([
+        range_cell,
+        vol_cell,
         cross_cell,
         _ma_cell("MA 5",   ma5,   price) if ma5   else "",
         _ma_cell("MA 50",  ma50,  price) if ma50  else "",
@@ -180,4 +213,11 @@ def render_spy_summary_card(
         _ma_cell("MA 200", ma200, price) if ma200 else "",
     ])
 
-    _render_card(price_row, tech_row)
+    row_style = f"display:flex;flex-wrap:wrap;background:{_BG}"
+    st.markdown(
+        f'<div style="background:{_BG};border:1px solid {_SEP};border-radius:8px;'
+        f'overflow:hidden;margin-bottom:4px">'
+        f'<div style="{row_style}">{single_row}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )

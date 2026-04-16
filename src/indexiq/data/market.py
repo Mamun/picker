@@ -113,6 +113,100 @@ def fetch_vix_history(period: str = "1y") -> pd.DataFrame:
         return pd.DataFrame()
 
 
+@st.cache_data(ttl=CACHE_TTL["fetch_put_call_ratio"], show_spinner=False)
+def fetch_put_call_ratio(scope: str = "daily") -> dict | None:
+    """
+    Compute SPY put/call ratio from option activity.
+
+    scope:
+      "daily"     — today's volume across the 4 nearest expirations (this
+                    week). Resets each trading day. Best for intraday sentiment.
+      "monthly"   — open interest across expirations within the next 30 days.
+                    Reflects near-term hedging positioning.
+      "quarterly" — open interest across expirations within the next 90 days.
+                    Captures longer-dated structural positioning.
+
+    Uses volume when available (live intraday); falls back to OI after close.
+    """
+    from datetime import datetime, timedelta
+
+    _SCOPE_META = {
+        "daily":     {"label": "Daily",     "note": "Today's volume · 4 nearest expirations · resets daily"},
+        "monthly":   {"label": "Monthly",   "note": "Open interest · expirations ≤ 30 days out"},
+        "quarterly": {"label": "Quarterly", "note": "Open interest · expirations ≤ 90 days out"},
+    }
+
+    try:
+        ticker = yf.Ticker("SPY")
+        all_exps = ticker.options
+        if not all_exps:
+            return None
+
+        today = datetime.today().date()
+
+        if scope == "daily":
+            expirations = all_exps[:4]
+            prefer_volume = True
+        elif scope == "monthly":
+            cutoff = today + timedelta(days=30)
+            expirations = [e for e in all_exps
+                           if datetime.strptime(e, "%Y-%m-%d").date() <= cutoff]
+            prefer_volume = False
+        else:  # quarterly
+            cutoff = today + timedelta(days=90)
+            expirations = [e for e in all_exps
+                           if datetime.strptime(e, "%Y-%m-%d").date() <= cutoff]
+            prefer_volume = False
+
+        if not expirations:
+            return None
+
+        total_puts = total_calls = 0
+        for exp in expirations:
+            chain = ticker.option_chain(exp)
+            if prefer_volume:
+                put_v  = chain.puts["volume"].fillna(0).sum()
+                call_v = chain.calls["volume"].fillna(0).sum()
+                if put_v > 0 or call_v > 0:
+                    total_puts  += int(put_v)
+                    total_calls += int(call_v)
+                    continue
+            # OI path (monthly/quarterly, or volume=0 fallback)
+            total_puts  += int(chain.puts["openInterest"].fillna(0).sum())
+            total_calls += int(chain.calls["openInterest"].fillna(0).sum())
+
+        if not total_calls:
+            return None
+
+        ratio = round(total_puts / total_calls, 3)
+        if ratio > 1.2:
+            signal, color = "Extreme Fear — contrarian bullish", "#22C55E"
+        elif ratio > 1.0:
+            signal, color = "Fearful — mild bullish lean",        "#86EFAC"
+        elif ratio > 0.8:
+            signal, color = "Neutral",                             "#94A3B8"
+        elif ratio > 0.6:
+            signal, color = "Complacent — mild bearish lean",     "#F59E0B"
+        else:
+            signal, color = "Extreme Greed — contrarian bearish", "#EF4444"
+
+        meta = _SCOPE_META[scope]
+        return {
+            "ratio":        ratio,
+            "signal":       signal,
+            "color":        color,
+            "puts":         total_puts,
+            "calls":        total_calls,
+            "scope_label":  meta["label"],
+            "scope_note":   meta["note"],
+            "exp_count":    len(expirations),
+            "exp_nearest":  expirations[0],
+            "exp_farthest": expirations[-1],
+        }
+    except Exception:
+        return None
+
+
 @st.cache_data(ttl=CACHE_TTL["fetch_index_snapshot"], show_spinner=False)
 def fetch_index_snapshot() -> pd.DataFrame:
     """Day-change snapshot for major indices used in the SPX dashboard. Cached 120 s."""
