@@ -177,6 +177,70 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with st.sidebar:
+    # ── Buy Me a Coffee ───────────────────────────────────────────────────────
+    st.markdown("""
+<a href="https://buymeacoffee.com/mamun" target="_blank" rel="noopener noreferrer"
+   style="display:block; text-decoration:none;">
+  <div style="
+    background: #FFDD00;
+    color: #000000;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+  ">
+    ☕ Buy Me a Coffee
+  </div>
+</a>
+""", unsafe_allow_html=True)
+    st.caption("Enjoying StockIQ? A coffee keeps it free ❤️")
+
+    st.markdown("---")
+
+    # ── Affiliate links ───────────────────────────────────────────────────────
+    st.markdown("**🤝 Recommended Brokers**")
+    st.markdown("""
+<div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+
+  <a href="https://www.interactivebrokers.com/mkt/?src=stockiq1&url=%2Fen%2Findex.php%3Ff%3D1338" target="_blank" rel="noopener noreferrer"
+     style="
+       display:block; text-decoration:none;
+       background:#1E293B; border:1px solid #334155;
+       border-radius:7px; padding:9px 12px;
+     ">
+    <div style="font-size:0.82rem; font-weight:700; color:#F8FAFC;">Interactive Brokers</div>
+    <div style="font-size:0.75rem; color:#94A3B8; margin-top:2px;">Low commissions · Global markets</div>
+  </a>
+
+  <a href="https://act.webull.com/kol-us/share.html?hl=en&inviteCode=stockiq" target="_blank" rel="noopener noreferrer"
+     style="
+       display:block; text-decoration:none;
+       background:#1E293B; border:1px solid #334155;
+       border-radius:7px; padding:9px 12px;
+     ">
+    <div style="font-size:0.82rem; font-weight:700; color:#F8FAFC;">Webull</div>
+    <div style="font-size:0.75rem; color:#94A3B8; margin-top:2px;">Commission-free · Get free stocks</div>
+  </a>
+
+  <a href="https://www.tradingview.com/?aff_id=stockiq" target="_blank" rel="noopener noreferrer"
+     style="
+       display:block; text-decoration:none;
+       background:#1E293B; border:1px solid #334155;
+       border-radius:7px; padding:9px 12px;
+     ">
+    <div style="font-size:0.82rem; font-weight:700; color:#F8FAFC;">TradingView</div>
+    <div style="font-size:0.75rem; color:#94A3B8; margin-top:2px;">Advanced charting · Free plan available</div>
+  </a>
+
+</div>
+<div style="font-size:0.7rem; color:#475569; margin-top:8px;">
+  Affiliate links — we may earn a commission at no cost to you.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
     st.caption("Data sourced from Yahoo Finance · Real-time")
 
 pg.run()
