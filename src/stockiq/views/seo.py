@@ -6,6 +6,7 @@ Streamlit controls the <head> tag, so tags injected via st.markdown() land in
 where crawlers and social parsers expect them.
 """
 import json
+import os
 from pathlib import Path
 
 import streamlit as st
@@ -168,3 +169,17 @@ def inject_seo() -> None:
 }})();
 </script>"""
     )
+
+    # ── Google Analytics GA4 ──────────────────────────────────────────────────
+    ga_id = os.environ.get("GOOGLE_ANALYTICS_ID", "")
+    if ga_id:
+        st.html(f"""
+<script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{ga_id}');
+</script>
+"""
+        )
