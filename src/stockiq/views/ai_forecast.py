@@ -5,8 +5,8 @@ from datetime import datetime, timezone, timedelta
 import pandas as pd
 import streamlit as st
 
-from indexiq.data.market import fetch_put_call_ratio, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history
-from indexiq.models.ai_forecast import (
+from stockiq.data.market import fetch_put_call_ratio, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history
+from stockiq.models.ai_forecast import (
     PROVIDERS,
     _get_secret,
     build_forecast_context,
@@ -193,7 +193,7 @@ def render_ai_forecast(gaps_df: pd.DataFrame, show_share_btn: bool = True) -> No
     <div style="font-size:1.5rem; margin-bottom:8px;">⚠️ Free Tier Quota Reached</div>
     <div style="color:#CBD5E1; font-size:0.95rem; line-height:1.6; margin-bottom:16px;">
         The <strong style="color:#F8FAFC;">free API quota</strong> for this AI provider has been exhausted
-        for today. IndexIQ is a free, open-source tool — shared API quotas run out quickly with many users.
+        for today. StockIQ is a free, open-source tool — shared API quotas run out quickly with many users.
     </div>
     <div style="color:#94A3B8; font-size:0.9rem; line-height:1.6; margin-bottom:20px;">
         💡 <strong style="color:#F8FAFC;">Quick fix:</strong> Switch to a different provider above,
@@ -206,7 +206,7 @@ def render_ai_forecast(gaps_df: pd.DataFrame, show_share_btn: bool = True) -> No
         padding: 16px 20px;
     ">
         <div style="font-size:1rem; font-weight:700; color:#F1C40F; margin-bottom:6px;">
-            ❤️ Help keep IndexIQ free for everyone
+            ❤️ Help keep StockIQ free for everyone
         </div>
         <div style="color:#CBD5E1; font-size:0.875rem; line-height:1.6; margin-bottom:14px;">
             Your sponsorship directly funds API costs, server capacity, and new features —

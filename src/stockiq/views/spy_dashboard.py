@@ -5,11 +5,11 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from indexiq.data import fetch_index_snapshot, fetch_put_call_ratio, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history, fetch_vix_ohlc
-from indexiq.models.indicators import compute_daily_gaps, compute_rsi, patch_today_gap
-from indexiq.views.ai_forecast import render_ai_forecast
-from indexiq.views.components.gap_table import render_gap_table
-from indexiq.views.components.summary_card import render_spy_summary_card
+from stockiq.data import fetch_index_snapshot, fetch_put_call_ratio, fetch_spx_intraday, fetch_spx_quote, fetch_vix_history, fetch_vix_ohlc
+from stockiq.models.indicators import compute_daily_gaps, compute_rsi, patch_today_gap
+from stockiq.views.ai_forecast import render_ai_forecast
+from stockiq.views.components.gap_table import render_gap_table
+from stockiq.views.components.summary_card import render_spy_summary_card
 
 
 # ── Main dashboard tab ─────────────────────────────────────────────────────────

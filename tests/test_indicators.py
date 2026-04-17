@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from indexiq.models.indicators import (
+from stockiq.models.indicators import (
     compute_mas,
     compute_fibonacci,
     compute_rsi,
@@ -15,7 +15,7 @@ from indexiq.models.indicators import (
     compute_weekly_ma200,
     detect_reversal_patterns,
 )
-from indexiq.config import MA_PERIODS, FIB_LEVELS
+from stockiq.config import MA_PERIODS, FIB_LEVELS
 
 
 # ── compute_mas ───────────────────────────────────────────────────────────────

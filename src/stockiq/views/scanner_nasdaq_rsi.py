@@ -1,6 +1,6 @@
 import streamlit as st
 
-from indexiq.data import fetch_nasdaq_rsi_scan
+from stockiq.data import fetch_nasdaq_rsi_scan
 
 _COMPANY = {
     "AAPL": "Apple", "MSFT": "Microsoft", "NVDA": "NVIDIA", "AMZN": "Amazon",

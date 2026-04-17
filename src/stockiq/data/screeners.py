@@ -6,9 +6,9 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
-from indexiq.cache_ttl import CACHE_TTL
-from indexiq.config import NASDAQ_100_TICKERS, SPX_TICKERS
-from indexiq.models.indicators import compute_rsi
+from stockiq.cache_ttl import CACHE_TTL
+from stockiq.config import NASDAQ_100_TICKERS, SPX_TICKERS
+from stockiq.models.indicators import compute_rsi
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 

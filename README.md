@@ -1,13 +1,13 @@
-# IndexIQ — Free S&P 500 Technical Analysis & Screener
+# StockIQ — Free S&P 500 Technical Analysis & Screener
 
-[![CI](https://github.com/Mamun/indexiq/actions/workflows/ci.yml/badge.svg)](https://github.com/Mamun/indexiq/actions/workflows/ci.yml)
+[![CI](https://github.com/Mamun/stockiq/actions/workflows/ci.yml/badge.svg)](https://github.com/Mamun/stockiq/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
 [![Streamlit](https://img.shields.io/badge/built%20with-Streamlit-FF4B4B)](https://streamlit.io)
 [![Live App](https://img.shields.io/badge/Live%20App-stpicker.streamlit.app-brightgreen)](https://stpicker.streamlit.app/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-pink)](https://github.com/sponsors/Mamun)
 
-> **IndexIQ** is a free, open-source web app that gives retail investors institutional-grade technical analysis — moving averages, RSI, Fibonacci retracements, candlestick patterns, and AI-powered forecasts — without a Bloomberg terminal.
+> **StockIQ** is a free, open-source web app that gives retail investors institutional-grade technical analysis — moving averages, RSI, Fibonacci retracements, candlestick patterns, and AI-powered forecasts — without a Bloomberg terminal.
 
 ## Try it now — no install needed
 
@@ -50,13 +50,13 @@ The live app runs on Streamlit Community Cloud and is free to use. No account or
 ### Installation
 
 ```bash
-git clone https://github.com/Mamun/indexiq.git
-cd indexiq
+git clone https://github.com/Mamun/stockiq.git
+cd stockiq
 
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-pip install -e .            # installs the indexiq package + all dependencies
+pip install -e .            # installs the stockiq package + all dependencies
 ```
 
 ### Configuration
@@ -148,20 +148,20 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 4. Run `pytest` and `ruff check .`
 5. Open a Pull Request
 
-See [good first issues](https://github.com/Mamun/indexiq/labels/good%20first%20issue) for a place to start.
+See [good first issues](https://github.com/Mamun/stockiq/labels/good%20first%20issue) for a place to start.
 
 ---
 
-## Sponsoring IndexIQ
+## Sponsoring StockIQ
 
-IndexIQ is free and open source. Hosting, API costs, and development time are funded entirely by community support. If this tool saves you time or helps your trading research, please consider sponsoring:
+StockIQ is free and open source. Hosting, API costs, and development time are funded entirely by community support. If this tool saves you time or helps your trading research, please consider sponsoring:
 
 | Platform | Link |
 |----------|------|
 | **GitHub Sponsors** | [github.com/sponsors/Mamun](https://github.com/sponsors/Mamun) |
-| **Ko-fi** | [ko-fi.com/indexiq](https://ko-fi.com/indexiq) |
-| **Open Collective** | [opencollective.com/indexiq](https://opencollective.com/indexiq) |
-| **Buy Me a Coffee** | [buymeacoffee.com/indexiq](https://buymeacoffee.com/indexiq) |
+| **Ko-fi** | [ko-fi.com/stockiq](https://ko-fi.com/stockiq) |
+| **Open Collective** | [opencollective.com/stockiq](https://opencollective.com/stockiq) |
+| **Buy Me a Coffee** | [buymeacoffee.com/stockiq](https://buymeacoffee.com/stockiq) |
 
 Your sponsorship helps keep the project free for everyone and funds:
 
@@ -190,4 +190,4 @@ Your sponsorship helps keep the project free for everyone and funds:
 
 ## Disclaimer
 
-IndexIQ is for **educational and informational purposes only**. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.
+StockIQ is for **educational and informational purposes only**. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.

@@ -7,7 +7,7 @@ import streamlit as st
 
 # ── Page config (must be first Streamlit call) ────────────────────────────────
 st.set_page_config(
-    page_title="IndexIQ — Free S&P 500 Technical Analysis & Screener",
+    page_title="StockIQ — Free S&P 500 Technical Analysis & Screener",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -77,7 +77,7 @@ def _show_overloaded_page():
 
     <div class="overload-wrap">
         <div class="overload-icon">📈</div>
-        <div class="overload-title">IndexIQ is temporarily unavailable</div>
+        <div class="overload-title">StockIQ is temporarily unavailable</div>
         <div class="overload-sub">
             We're experiencing higher than usual traffic and the app is currently overloaded.
             Our free tier has limited resources — we're working to bring it back online shortly.
@@ -85,7 +85,7 @@ def _show_overloaded_page():
         <div class="sponsor-card">
             <h3>❤️ Help us stay online for everyone</h3>
             <p>
-                IndexIQ is free and open source. Your sponsorship directly funds server capacity,
+                StockIQ is free and open source. Your sponsorship directly funds server capacity,
                 faster data feeds, and new features — so more traders can access professional-grade
                 technical analysis without paying a subscription.
             </p>
@@ -108,12 +108,12 @@ try:
     except Exception:
         pass  # No secrets.toml locally — keys come from .env via load_dotenv()
 
-    # Ensure src/ is on the path so `indexiq` resolves on Streamlit Cloud
+    # Ensure src/ is on the path so `stockiq` resolves on Streamlit Cloud
     _src = os.path.join(os.path.dirname(__file__), "src")
     if _src not in sys.path:
         sys.path.insert(0, _src)
 
-    from indexiq.views.seo import inject_seo
+    from stockiq.views.seo import inject_seo
 
 except Exception:
     _show_overloaded_page()
@@ -124,25 +124,25 @@ inject_seo()
 # ── Navigation ────────────────────────────────────────────────────────────────
 pages = {
     "Market": [
-        st.Page("src/indexiq/views/spy_dashboard.py",    title="SPY Dashboard",           icon="📈", url_path="spy",             default=True),
-        st.Page("src/indexiq/views/ai_forecast_page.py", title="SPY AI Outlook",       icon="🤖", url_path="spy-ai-forecast"),
-        st.Page("src/indexiq/views/spy_gap_table.py",    title="SPY Gap Table",           icon="📋", url_path="spy-gaps"),
+        st.Page("src/stockiq/views/spy_dashboard.py",    title="SPY Dashboard",           icon="📈", url_path="spy",             default=True),
+        st.Page("src/stockiq/views/ai_forecast_page.py", title="SPY AI Outlook",       icon="🤖", url_path="spy-ai-forecast"),
+        st.Page("src/stockiq/views/spy_gap_table.py",    title="SPY Gap Table",           icon="📋", url_path="spy-gaps"),
     ],
     "S&P 500 Tools": [
-        st.Page("src/indexiq/views/analyzer.py",         title="Stock Analyzer",          icon="🔬", url_path="analyzer"),
-        st.Page("src/indexiq/views/screener.py",         title="Candle Screener",         icon="📊", url_path="screener"),
+        st.Page("src/stockiq/views/analyzer.py",         title="Stock Analyzer",          icon="🔬", url_path="analyzer"),
+        st.Page("src/stockiq/views/screener.py",         title="Candle Screener",         icon="📊", url_path="screener"),
     ],
     "Scanners": [
-        st.Page("src/indexiq/views/scanner_premarket.py",       title="Pre-Market Scanner",     icon="🌅", url_path="premarket"),
-        st.Page("src/indexiq/views/scanner_nasdaq_rsi.py",      title="NASDAQ RSI Scanner",     icon="📊", url_path="nasdaq-oversold"),
-        st.Page("src/indexiq/views/scanner_bounce_radar.py",    title="MA200 Bounce Radar",     icon="📡", url_path="bounce-radar"),
-        st.Page("src/indexiq/views/scanner_squeeze.py",         title="Short Squeeze Scanner",  icon="🔥", url_path="squeeze"),
-        st.Page("src/indexiq/views/scanner_strong_buy.py",      title="Analyst Buy Picks",      icon="💎", url_path="strong-buy"),
-        st.Page("src/indexiq/views/scanner_strong_sell.py",     title="Analyst Sell Picks",     icon="🔻", url_path="strong-sell"),
-        st.Page("src/indexiq/views/scanner_munger_strategy.py", title="Munger Value Picks",     icon="🎩", url_path="munger"),
+        st.Page("src/stockiq/views/scanner_premarket.py",       title="Pre-Market Scanner",     icon="🌅", url_path="premarket"),
+        st.Page("src/stockiq/views/scanner_nasdaq_rsi.py",      title="NASDAQ RSI Scanner",     icon="📊", url_path="nasdaq-oversold"),
+        st.Page("src/stockiq/views/scanner_bounce_radar.py",    title="MA200 Bounce Radar",     icon="📡", url_path="bounce-radar"),
+        st.Page("src/stockiq/views/scanner_squeeze.py",         title="Short Squeeze Scanner",  icon="🔥", url_path="squeeze"),
+        st.Page("src/stockiq/views/scanner_strong_buy.py",      title="Analyst Buy Picks",      icon="💎", url_path="strong-buy"),
+        st.Page("src/stockiq/views/scanner_strong_sell.py",     title="Analyst Sell Picks",     icon="🔻", url_path="strong-sell"),
+        st.Page("src/stockiq/views/scanner_munger_strategy.py", title="Munger Value Picks",     icon="🎩", url_path="munger"),
     ],
     "Info": [
-        st.Page("src/indexiq/views/about.py",            title="About IndexIQ",           icon="ℹ️",  url_path="about"),
+        st.Page("src/stockiq/views/about.py",            title="About StockIQ",           icon="ℹ️",  url_path="about"),
     ],
 }
 
@@ -162,7 +162,7 @@ st.markdown("""
     font-family: sans-serif;
 ">
     <span style="font-size: 1.2rem; font-weight: 700; color: #F8FAFC; letter-spacing: 0.5px;">
-        IndexIQ
+        StockIQ
     </span>
 </div>
 <div style="margin-top: 48px;"></div>

@@ -9,7 +9,7 @@ And inline score logic for bounce, squeeze, strong-buy, strong-sell.
 
 
 import pytest
-from indexiq.data.screeners import _quality_score, _proximity_score
+from stockiq.data.screeners import _quality_score, _proximity_score
 
 
 # ── _quality_score ────────────────────────────────────────────────────────────

@@ -138,11 +138,11 @@ def inject_seo() -> None:
   }}
 
   function upsertJsonLd(json) {{
-    var el = document.querySelector('script[data-indexiq-ld]');
+    var el = document.querySelector('script[data-stockiq-ld]');
     if (!el) {{
       el = document.createElement('script');
       el.type = 'application/ld+json';
-      el.setAttribute('data-indexiq-ld', '1');
+      el.setAttribute('data-stockiq-ld', '1');
       document.head.appendChild(el);
     }}
     el.textContent = json;

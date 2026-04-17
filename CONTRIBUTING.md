@@ -1,6 +1,6 @@
-# Contributing to IndexIQ
+# Contributing to StockIQ
 
-Thank you for your interest in contributing! IndexIQ is a community-driven project and every improvement — big or small — is appreciated.
+Thank you for your interest in contributing! StockIQ is a community-driven project and every improvement — big or small — is appreciated.
 
 ## Table of Contents
 
@@ -19,8 +19,8 @@ Thank you for your interest in contributing! IndexIQ is a community-driven proje
 1. **Fork** the repository on GitHub.
 2. **Clone** your fork:
    ```bash
-   git clone https://github.com/<your-username>/indexiq.git
-   cd indexiq
+   git clone https://github.com/<your-username>/stockiq.git
+   cd stockiq
    ```
 3. Create a feature branch:
    ```bash
@@ -36,7 +36,7 @@ Thank you for your interest in contributing! IndexIQ is a community-driven proje
 ```bash
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e .               # installs indexiq package + all dependencies
+pip install -e .               # installs stockiq package + all dependencies
 pip install pytest pytest-cov ruff
 ```
 

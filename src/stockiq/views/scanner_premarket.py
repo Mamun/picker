@@ -5,7 +5,7 @@ Shows today's pre-market movers alongside a 7-day daily close heatmap.
 import pandas as pd
 import streamlit as st
 
-from indexiq.data import fetch_premarket_history, fetch_premarket_scan
+from stockiq.data import fetch_premarket_history, fetch_premarket_scan
 
 _COMPANY = {
     "AAPL": "Apple", "MSFT": "Microsoft", "NVDA": "NVIDIA", "AMZN": "Amazon",

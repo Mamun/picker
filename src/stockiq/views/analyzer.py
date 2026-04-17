@@ -1,8 +1,8 @@
 import pandas as pd
 import streamlit as st
 
-from indexiq.data import fetch_ohlcv, get_company_name, search_companies
-from indexiq.models.indicators import (
+from stockiq.data import fetch_ohlcv, get_company_name, search_companies
+from stockiq.models.indicators import (
     compute_daily_gaps,
     compute_fibonacci,
     compute_mas,
@@ -10,10 +10,10 @@ from indexiq.models.indicators import (
     compute_weekly_ma200,
     detect_reversal_patterns,
 )
-from indexiq.models.signals import overall_signal, signal_score
-from indexiq.views.components.charts import build_chart
-from indexiq.views.components.gap_table import render_gap_table
-from indexiq.views.components.summary_card import render_stock_summary_card
+from stockiq.models.signals import overall_signal, signal_score
+from stockiq.views.components.charts import build_chart
+from stockiq.views.components.gap_table import render_gap_table
+from stockiq.views.components.summary_card import render_stock_summary_card
 
 _PERIODS = {
     "1M":  30,

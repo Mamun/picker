@@ -2,7 +2,7 @@
 Load cache TTL values from config/cache.yml.
 
 Usage:
-    from indexiq.cache_ttl import CACHE_TTL
+    from stockiq.cache_ttl import CACHE_TTL
 
     @st.cache_data(ttl=CACHE_TTL["fetch_spx_quote"])
     def fetch_spx_quote() -> dict: ...

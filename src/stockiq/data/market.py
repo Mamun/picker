@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
-from indexiq.cache_ttl import CACHE_TTL
+from stockiq.cache_ttl import CACHE_TTL
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 

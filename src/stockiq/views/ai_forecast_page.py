@@ -1,8 +1,8 @@
 import streamlit as st
 
-from indexiq.data import fetch_spx_intraday
-from indexiq.models.indicators import compute_daily_gaps, compute_rsi
-from indexiq.views.ai_forecast import render_ai_forecast
+from stockiq.data import fetch_spx_intraday
+from stockiq.models.indicators import compute_daily_gaps, compute_rsi
+from stockiq.views.ai_forecast import render_ai_forecast
 
 
 def render_ai_forecast_page() -> None:

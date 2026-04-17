@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from indexiq.config import MA_PERIODS, FIB_LEVELS
+from stockiq.config import MA_PERIODS, FIB_LEVELS
 
 
 def compute_mas(df: pd.DataFrame) -> pd.DataFrame:

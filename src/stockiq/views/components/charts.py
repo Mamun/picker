@@ -2,8 +2,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from indexiq.config import MA_PERIODS, MA_COLORS, MA200W_COLOR, FIB_COLORS, REVERSAL_PATTERNS
-from indexiq.models.signals import find_crosses
+from stockiq.config import MA_PERIODS, MA_COLORS, MA200W_COLOR, FIB_COLORS, REVERSAL_PATTERNS
+from stockiq.models.signals import find_crosses
 
 
 def build_chart(

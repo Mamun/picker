@@ -1,8 +1,8 @@
 import plotly.graph_objects as go
 import streamlit as st
 
-from indexiq.config import SCREENER_TICKER_COUNT
-from indexiq.data import fetch_spx_recommendations
+from stockiq.config import SCREENER_TICKER_COUNT
+from stockiq.data import fetch_spx_recommendations
 
 _SIGNAL_TIERS = [
     "🟢 Strong Buy",

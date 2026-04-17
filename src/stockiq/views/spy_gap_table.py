@@ -1,9 +1,9 @@
 import pandas as pd
 import streamlit as st
 
-from indexiq.data import fetch_spx_intraday, fetch_spx_quote
-from indexiq.models.indicators import compute_daily_gaps, compute_rsi, patch_today_gap
-from indexiq.views.components.gap_table import render_gap_table
+from stockiq.data import fetch_spx_intraday, fetch_spx_quote
+from stockiq.models.indicators import compute_daily_gaps, compute_rsi, patch_today_gap
+from stockiq.views.components.gap_table import render_gap_table
 
 
 def render_spy_gap_table_page() -> None:

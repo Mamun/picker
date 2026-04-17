@@ -6,7 +6,7 @@ Sub-modules:
   models.signals      — buy/sell signal scoring and classification
   models.ai_forecast  — AI forecast context building and API call
 """
-from indexiq.models.indicators import (
+from stockiq.models.indicators import (
     compute_daily_gaps,
     compute_fibonacci,
     compute_mas,
@@ -15,7 +15,7 @@ from indexiq.models.indicators import (
     detect_reversal_patterns,
     patch_today_gap,
 )
-from indexiq.models.signals import find_crosses, overall_signal, signal_score
+from stockiq.models.signals import find_crosses, overall_signal, signal_score
 
 __all__ = [
     "compute_daily_gaps",

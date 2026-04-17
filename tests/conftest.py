@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for IndexIQ test suite."""
+"""Shared pytest fixtures for StockIQ test suite."""
 
 import numpy as np
 import pandas as pd

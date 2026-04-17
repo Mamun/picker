@@ -6,8 +6,8 @@ Sub-modules:
   data.market     — live SPY/VIX/index quotes
   data.screeners  — scanner functions (bounce, squeeze, munger, strong buy/sell, screener)
 """
-from indexiq.data.fetch import fetch_ohlcv, get_company_name, search_companies
-from indexiq.data.market import (
+from stockiq.data.fetch import fetch_ohlcv, get_company_name, search_companies
+from stockiq.data.market import (
     fetch_index_snapshot,
     fetch_put_call_ratio,
     fetch_spx_intraday,
@@ -15,7 +15,7 @@ from indexiq.data.market import (
     fetch_vix_history,
     fetch_vix_ohlc,
 )
-from indexiq.data.screeners import (
+from stockiq.data.screeners import (
     fetch_bounce_candidates,
     fetch_munger_candidates,
     fetch_nasdaq_oversold,
