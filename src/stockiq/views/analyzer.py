@@ -9,6 +9,7 @@ from stockiq.models.indicators import (
     compute_rsi,
     compute_weekly_ma200,
     detect_reversal_patterns,
+    patch_today_gap,
 )
 from stockiq.models.signals import overall_signal, signal_score
 from stockiq.views.components.charts import build_chart
@@ -157,7 +158,11 @@ def render_analyzer_tab() -> None:
     st.plotly_chart(fig, width="stretch")
 
     # ── Gap table ─────────────────────────────────────────────────────────────
-    gaps_df = compute_daily_gaps(display_df)
+    last = display_df.iloc[-1]
+    gaps_df = patch_today_gap(
+        compute_daily_gaps(display_df),
+        {"day_high": float(last["High"]), "day_low": float(last["Low"])},
+    )
     if "RSI" in display_df.columns:
         gaps_df = gaps_df.copy()
         rsi_dedup = display_df["RSI"][~display_df.index.duplicated(keep="last")]
