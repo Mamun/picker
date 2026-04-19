@@ -113,7 +113,7 @@ try:
     if _src not in sys.path:
         sys.path.insert(0, _src)
 
-    from stockiq.views.seo import inject_seo
+    from stockiq.frontend.views.seo import inject_seo
 
 except Exception:
     _show_overloaded_page()
@@ -124,26 +124,26 @@ inject_seo()
 # ── Navigation ────────────────────────────────────────────────────────────────
 pages = {
     "Market": [
-        st.Page("src/stockiq/views/spy_dashboard.py",    title="SPY Dashboard",           icon="📈", url_path="spy",             default=True),
-        st.Page("src/stockiq/views/ai_forecast_page.py", title="SPY AI Outlook",       icon="🤖", url_path="spy-ai-forecast"),
-        st.Page("src/stockiq/views/spy_gap_table.py",    title="SPY Gap Table",           icon="📋", url_path="spy-gaps"),
+        st.Page("src/stockiq/frontend/views/spy_dashboard.py",    title="SPY Dashboard",       icon="📈", url_path="spy",             default=True),
+        st.Page("src/stockiq/frontend/views/ai_forecast_page.py", title="SPY AI Outlook",      icon="🤖", url_path="spy-ai-forecast"),
+        st.Page("src/stockiq/frontend/views/spy_gap_table.py",    title="SPY Gap Table",        icon="📋", url_path="spy-gaps"),
     ],
     "S&P 500 Tools": [
-        st.Page("src/stockiq/views/analyzer.py",         title="Stock Analyzer",          icon="🔬", url_path="analyzer"),
-        st.Page("src/stockiq/views/screener.py",         title="Candle Screener",         icon="📊", url_path="screener"),
+        st.Page("src/stockiq/frontend/views/analyzer.py",         title="Stock Analyzer",      icon="🔬", url_path="analyzer"),
+        st.Page("src/stockiq/frontend/views/candle_momentum_screener.py",         title="Candle Screener",     icon="📊", url_path="screener"),
     ],
     "Scanners": [
-        st.Page("src/stockiq/views/scanner_premarket.py",       title="Pre-Market Scanner",     icon="🌅", url_path="premarket"),
-        st.Page("src/stockiq/views/scanner_nasdaq_rsi.py",      title="NASDAQ RSI Scanner",     icon="📊", url_path="nasdaq-oversold"),
-        st.Page("src/stockiq/views/scanner_bounce_radar.py",    title="MA200 Bounce Radar",     icon="📡", url_path="bounce-radar"),
-        st.Page("src/stockiq/views/scanner_squeeze.py",         title="Short Squeeze Scanner",  icon="🔥", url_path="squeeze"),
-        st.Page("src/stockiq/views/scanner_strong_buy.py",      title="Analyst Buy Picks",      icon="💎", url_path="strong-buy"),
-        st.Page("src/stockiq/views/scanner_strong_sell.py",     title="Analyst Sell Picks",     icon="🔻", url_path="strong-sell"),
-        st.Page("src/stockiq/views/scanner_munger_strategy.py", title="Munger Value Picks",     icon="🎩", url_path="munger"),
-        st.Page("src/stockiq/views/scanner_etf.py",             title="ETF Scanner",            icon="🌐", url_path="etf-scanner"),
+        st.Page("src/stockiq/frontend/views/premarket_scanner.py",       title="Pre-Market Scanner",    icon="🌅", url_path="premarket"),
+        st.Page("src/stockiq/frontend/views/nasdaq_rsi_scanner.py",      title="NASDAQ RSI Scanner",    icon="📊", url_path="nasdaq-oversold"),
+        st.Page("src/stockiq/frontend/views/bounce_radar_scanner.py",    title="MA200 Bounce Radar",    icon="📡", url_path="bounce-radar"),
+        st.Page("src/stockiq/frontend/views/squeeze_scanner.py",         title="Short Squeeze Scanner", icon="🔥", url_path="squeeze"),
+        st.Page("src/stockiq/frontend/views/strong_buy_scanner.py",      title="Analyst Buy Picks",     icon="💎", url_path="strong-buy"),
+        st.Page("src/stockiq/frontend/views/strong_sell_scanner.py",     title="Analyst Sell Picks",    icon="🔻", url_path="strong-sell"),
+        st.Page("src/stockiq/frontend/views/munger_strategy_scanner.py", title="Munger Value Picks",    icon="🎩", url_path="munger"),
+        st.Page("src/stockiq/frontend/views/etf_scanner.py",             title="ETF Scanner",           icon="🌐", url_path="etf-scanner"),
     ],
     "Info": [
-        st.Page("src/stockiq/views/about.py",            title="About StockIQ",           icon="ℹ️",  url_path="about"),
+        st.Page("src/stockiq/frontend/views/about.py",            title="About StockIQ",       icon="ℹ️",  url_path="about"),
     ],
 }
 

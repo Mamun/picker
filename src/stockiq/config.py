@@ -1,10 +1,9 @@
 """
-Application configuration loaded from config/app.yml.
+Frontend visual configuration loaded from config/app.yml.
 
-All other modules import from here as before — nothing else changes.
-To adjust colours, periods, tickers, or patterns edit config/app.yml.
+Backend data parameters (MA_PERIODS, FIB_LEVELS, ticker universes, CACHE_TTL)
+live in stockiq.backend.config.
 """
-import os
 from pathlib import Path
 
 import yaml
@@ -15,28 +14,17 @@ with open(_cfg_path) as _f:
 
 # ── Moving averages ────────────────────────────────────────────────────────────
 _ma = _cfg["moving_averages"]
-MA_PERIODS: list[int]       = _ma["periods"]
-MA_COLORS:  dict[int, str]  = {int(k): v for k, v in _ma["colors"].items()}
-MA200W_COLOR: str            = _ma["weekly_ma200_color"]
+MA_COLORS:    dict[int, str] = {int(k): v for k, v in _ma["colors"].items()}
+MA200W_COLOR: str             = _ma["weekly_ma200_color"]
 
 # ── Fibonacci ──────────────────────────────────────────────────────────────────
-FIB_LEVELS: list[float] = _cfg["fibonacci"]["levels"]
-FIB_COLORS: list[str]   = _cfg["fibonacci"]["colors"]
+FIB_COLORS: list[str] = _cfg["fibonacci"]["colors"]
 
 # ── Reversal patterns ──────────────────────────────────────────────────────────
-# Preserved as list-of-tuples: (col, label, bullish, symbol, color)
 REVERSAL_PATTERNS: list[tuple] = [
     (p["col"], p["label"], p["bullish"], p["symbol"], p["color"])
     for p in _cfg["reversal_patterns"]
 ]
-
-# ── Screener ticker pool ───────────────────────────────────────────────────────
-_screener = _cfg["screener"]
-SCREENER_TICKER_COUNT: int  = int(os.environ.get("SCREENER_TICKER_COUNT", _screener["default_count"]))
-SPX_TICKERS: list[str]      = _screener["universe"][:SCREENER_TICKER_COUNT]
-
-# ── NASDAQ-100 ticker universe ─────────────────────────────────────────────────
-NASDAQ_100_TICKERS: list[str] = _cfg["nasdaq_100"]
 
 # ── Chart period options ───────────────────────────────────────────────────────
 PERIOD_OPTIONS: dict[str, int] = _cfg["period_options"]
