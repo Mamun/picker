@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from stockiq.backend.data.fetch import fetch_ohlcv, get_company_name, search_companies
+from stockiq.backend.data.yf_fetch import fetch_ohlcv, get_company_name, search_companies
 from stockiq.backend.models.indicators import (
     compute_mas,
     compute_rsi,

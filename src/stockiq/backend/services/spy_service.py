@@ -2,10 +2,10 @@
 
 import pandas as pd
 
-from stockiq.backend.data.fetch import fetch_ohlcv
-from stockiq.backend.data.gap_cache import apply_gap_cache, save_confirmed_gaps
+from stockiq.backend.data.yf_fetch import fetch_ohlcv
+from stockiq.backend.data.local_gap_cache import apply_gap_cache, save_confirmed_gaps
 from stockiq.backend.data.market import fetch_spx_intraday, fetch_spx_quote
-from stockiq.backend.data.ohlc_cache import enrich_with_cache
+from stockiq.backend.data.local_ohlc_cache import enrich_with_cache
 from stockiq.backend.models.indicators import compute_daily_gaps, compute_rsi, patch_today_gap
 
 
