@@ -10,6 +10,7 @@ from stockiq.backend.services.spy_dashboard_service import (
     get_put_call_ratio,
     get_spy_chart_df,
     get_spy_gap_table_data,
+    get_spy_options_analysis,
     get_spy_quote,
     get_vix_chart_df,
     get_vix_gap_history,
@@ -55,6 +56,11 @@ def render_spy_dashboard_tab() -> None:
 
     # ── 6. VIX + Fear gauges ──────────────────────────────────────────────────
     _render_vix_section(overview["vix"])
+
+    st.divider()
+
+    # ── 7. Options Flow — Max Pain + OI heatmap ───────────────────────────────
+    _render_options_section(quote["price"])
 
     # ── Fill AI slot last ─────────────────────────────────────────────────────
     try:
@@ -444,6 +450,159 @@ def _spy_chart(df, ma_periods: list, prev_close: float | None = None,
         yaxis=dict(title="Price", gridcolor="#1E293B"),
         yaxis2=dict(title="Volume", gridcolor="#1E293B"),
         hovermode="x unified",
+    )
+    return fig
+
+
+def _render_options_section(current_price: float) -> None:
+    """Max Pain level card + OI-by-strike butterfly chart."""
+    st.markdown(
+        '<div style="font-size:11px;font-weight:700;color:#64748B;'
+        'letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
+        'Options Flow — Max Pain &amp; Open Interest</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Seed call (nearest expiration) gives us the full expiration list
+    seed = get_spy_options_analysis(expiration="", current_price=current_price)
+    if not seed:
+        st.caption("Options data unavailable — market may be closed.")
+        return
+
+    exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))  # label → ISO
+    exp_col, _ = st.columns([2, 3])
+    with exp_col:
+        selected_label = st.selectbox(
+            "Expiration",
+            options=list(exp_map.keys()),
+            index=0,
+            key="options_exp",
+        )
+    selected_iso = exp_map[selected_label]
+
+    # Re-fetch (cached) for the chosen expiration
+    data = get_spy_options_analysis(expiration=selected_iso, current_price=current_price)
+    if not data:
+        st.caption("Options data unavailable for this expiration.")
+        return
+
+    max_pain = data["max_pain"]
+    oi_df    = data["oi_df"]
+    dist_pct = (current_price - max_pain) / max_pain * 100 if max_pain else 0
+
+    # ── Max pain metric card ──────────────────────────────────────────────────
+    if abs(dist_pct) <= 0.5:
+        mp_color, mp_signal = "#22C55E", "Price pinned near max pain — low movement expected"
+    elif abs(dist_pct) <= 2.0:
+        mp_color, mp_signal = "#86EFAC", "Price close to max pain — mild gravitational pull"
+    elif abs(dist_pct) <= 4.0:
+        mp_color, mp_signal = "#F59E0B", "Price drifting from max pain — watch for reversion"
+    else:
+        mp_color, mp_signal = "#EF4444", "Price far from max pain — strong directional move"
+
+    dist_arrow = "▲" if dist_pct >= 0 else "▼"
+    mp_col, chart_col = st.columns([1, 3])
+
+    with mp_col:
+        st.markdown(
+            f"""
+<div style="background:rgba(255,255,255,0.03);border:1px solid #1E293B;border-radius:10px;
+            padding:16px;height:100%;box-sizing:border-box">
+  <div style="font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:.07em;
+              text-transform:uppercase;margin-bottom:4px">Max Pain · {selected_label}</div>
+  <div style="font-size:36px;font-weight:900;color:{mp_color};line-height:1;
+              margin:4px 0">${max_pain:,.0f}</div>
+  <div style="font-size:11px;color:#64748B;margin-top:6px;line-height:1.6">
+    Current&nbsp;<b style="color:#F1F5F9">${current_price:,.2f}</b><br>
+    {dist_arrow}&nbsp;<b style="color:{mp_color}">{abs(dist_pct):.1f}%</b> from max pain
+  </div>
+  <div style="font-size:10px;color:{mp_color};margin-top:8px;line-height:1.5">
+    {mp_signal}
+  </div>
+  <div style="font-size:9px;color:#334155;margin-top:8px;line-height:1.5">
+    Max pain = strike where all open contracts expire with maximum total loss.
+    Price tends to gravitate toward it into expiry.
+  </div>
+</div>""",
+            unsafe_allow_html=True,
+        )
+
+    with chart_col:
+        if not oi_df.empty:
+            st.plotly_chart(
+                _oi_butterfly_chart(oi_df, current_price, max_pain),
+                width="stretch",
+            )
+        else:
+            st.caption("No OI data for this expiration.")
+
+
+def _oi_butterfly_chart(
+    oi_df: pd.DataFrame,
+    current_price: float,
+    max_pain: float,
+) -> go.Figure:
+    """Horizontal butterfly: put OI left (red), call OI right (green)."""
+    strikes = oi_df["strike"].values
+    call_oi = oi_df["call_oi"].values.astype(float)
+    put_oi  = oi_df["put_oi"].values.astype(float)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        y=strikes, x=-put_oi, orientation="h",
+        name="Put OI", marker_color="rgba(239,68,68,0.75)",
+        hovertemplate="Strike %{y}<br>Put OI: %{customdata:,}<extra></extra>",
+        customdata=put_oi,
+    ))
+    fig.add_trace(go.Bar(
+        y=strikes, x=call_oi, orientation="h",
+        name="Call OI", marker_color="rgba(34,197,94,0.75)",
+        hovertemplate="Strike %{y}<br>Call OI: %{x:,}<extra></extra>",
+    ))
+
+    y_min, y_max = float(strikes.min()), float(strikes.max())
+
+    fig.add_shape(
+        type="line", xref="paper", yref="y",
+        x0=0, x1=1, y0=current_price, y1=current_price,
+        line=dict(color="#3B82F6", width=1.5, dash="solid"),
+    )
+    fig.add_annotation(
+        xref="paper", yref="y", x=1.01, y=current_price,
+        text=f"<b>${current_price:,.0f}</b>", showarrow=False,
+        font=dict(color="#3B82F6", size=10), xanchor="left",
+    )
+
+    if y_min <= max_pain <= y_max:
+        fig.add_shape(
+            type="line", xref="paper", yref="y",
+            x0=0, x1=1, y0=max_pain, y1=max_pain,
+            line=dict(color="#F59E0B", width=1.5, dash="dot"),
+        )
+        fig.add_annotation(
+            xref="paper", yref="y", x=1.01, y=max_pain,
+            text=f"Pain ${max_pain:,.0f}", showarrow=False,
+            font=dict(color="#F59E0B", size=10), xanchor="left",
+        )
+
+    x_max     = max(call_oi.max(), put_oi.max()) * 1.1 if len(call_oi) else 1
+    tick_step = max(1, int(x_max / 5))
+
+    fig.update_layout(
+        template="plotly_dark", height=420, barmode="overlay",
+        margin=dict(l=60, r=100, t=10, b=40),
+        xaxis=dict(
+            range=[-x_max, x_max],
+            tickvals=[-4*tick_step, -2*tick_step, 0, 2*tick_step, 4*tick_step],
+            ticktext=[f"{4*tick_step:,}", f"{2*tick_step:,}", "0",
+                      f"{2*tick_step:,}", f"{4*tick_step:,}"],
+            title="Open Interest",
+            gridcolor="#1E293B",
+        ),
+        yaxis=dict(title="Strike", gridcolor="#1E293B", dtick=5),
+        legend=dict(orientation="h", y=1.04, x=0),
+        hovermode="y unified",
     )
     return fig
 

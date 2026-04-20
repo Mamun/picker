@@ -112,6 +112,38 @@ def fetch_vix_history(period: str = "1y") -> pd.DataFrame:
         return pd.DataFrame()
 
 
+@ttl_cache(CACHE_TTL["fetch_spy_options_data"])
+def fetch_spy_options_data(expiration: str = "") -> dict | None:
+    """
+    Fetch SPY options chain (calls + puts) for one expiration.
+    If expiration is "" or not found, uses the nearest available date.
+
+    Returns:
+        {
+          "calls":       DataFrame  (strike, openInterest, volume, impliedVolatility, …)
+          "puts":        DataFrame
+          "expiration":  str        (ISO date used)
+          "expirations": list[str]  (all available ISO dates)
+        }
+    or None on error.
+    """
+    try:
+        ticker   = yf.Ticker("SPY")
+        all_exps = list(ticker.options)
+        if not all_exps:
+            return None
+        exp = expiration if expiration in all_exps else all_exps[0]
+        chain = ticker.option_chain(exp)
+        return {
+            "calls":       chain.calls,
+            "puts":        chain.puts,
+            "expiration":  exp,
+            "expirations": all_exps,
+        }
+    except Exception:
+        return None
+
+
 @ttl_cache(CACHE_TTL["fetch_put_call_ratio"])
 def fetch_put_call_ratio(scope: str = "daily") -> dict | None:
     """

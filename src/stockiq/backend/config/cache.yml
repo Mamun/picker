@@ -9,6 +9,7 @@ market:
   fetch_vix_history: 3600       # SPY + VIX dual-axis history — refresh hourly
   fetch_index_snapshot: 120     # Major indices strip — refresh every 2 minutes
   fetch_put_call_ratio: 3600    # SPY options put/call ratio — refresh hourly
+  fetch_spy_options_data: 900   # SPY options chain (OI, max pain) — refresh every 15 min
 
 screeners:
   fetch_candle_momentum_scan: 3600    # Weekly/monthly candle screener — hourly

@@ -11,6 +11,7 @@ usable by ai_forecast_service and other consumers.
 from stockiq.backend.services.market_service import (
     get_market_overview,
     get_put_call_ratio,
+    get_spy_options_analysis,
     get_vix_chart_df,
     get_vix_gap_history,
     get_vix_ohlc_df,
@@ -32,4 +33,6 @@ __all__ = [
     "get_vix_chart_df",
     "get_vix_gap_history",
     "get_vix_ohlc_df",
+    # Options analysis
+    "get_spy_options_analysis",
 ]
