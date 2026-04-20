@@ -127,12 +127,13 @@ def render_spy_summary_card(
     chg: float,
     chg_pct: float,
     daily_df: pd.DataFrame,
+    rsi: float | None = None,
+    vix_snapshot: dict | None = None,
+    pc_data: dict | None = None,
 ) -> None:
     """
-    SPY technical snapshot — single row, unique info only.
-    (Price/RSI/Day High-Low are shown in the header and gap table.)
-
-    Single row: 52W range gauge · volume vs 20D avg · MA trend · MA5/50/100/200
+    SPY technical snapshot — single row.
+    Optionally prepends signal cells (RSI, VIX, P/C) when provided.
     """
     ma5 = ma50 = ma100 = ma200 = cross_label = cross_clr = None
     vol_avg_20d = None
@@ -202,8 +203,38 @@ def render_spy_summary_card(
     # ── MA alignment ──────────────────────────────────────────────────────────
     cross_cell = _cell("MA Trend", cross_label, "MA50 vs MA200", cross_clr) if cross_label else ""
 
+    # ── Optional signal cells (RSI · VIX · P/C) ──────────────────────────────
+    signal_cells = ""
+
+    if rsi is not None:
+        if rsi < 30:
+            rc, rs = _UP,  "Oversold"
+        elif rsi < 45:
+            rc, rs = "#86EFAC", "Weak"
+        elif rsi < 55:
+            rc, rs = _MUT, "Neutral"
+        elif rsi < 70:
+            rc, rs = "#FCD34D", "Strong"
+        else:
+            rc, rs = _DN,  "Overbought"
+        signal_cells += _cell("RSI (14d)", f"{rsi:.1f}", rs, rc)
+
+    if vix_snapshot:
+        _VZ_CLR = {"Calm": _UP, "Normal": "#86EFAC",
+                   "Elevated": _NEU, "Extreme Fear": _DN}
+        vix_now  = vix_snapshot.get("current")
+        vix_zone = vix_snapshot.get("zone", "")
+        if vix_now and vix_zone:
+            vc = _VZ_CLR.get(vix_zone, _MUT)
+            signal_cells += _cell("VIX", f"{vix_now:.2f}", vix_zone, vc)
+
+    if pc_data:
+        short_sig = pc_data["signal"].split("—")[0].strip() if "—" in pc_data["signal"] else pc_data["signal"]
+        signal_cells += _cell("P/C Daily", f"{pc_data['ratio']:.3f}", short_sig, pc_data["color"])
+
     # ── Single combined row ───────────────────────────────────────────────────
     single_row = "".join([
+        signal_cells,
         range_cell,
         vol_cell,
         cross_cell,

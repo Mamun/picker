@@ -20,11 +20,18 @@ from stockiq.frontend.views.ai_forecast import render_ai_forecast
 from stockiq.frontend.views.components.gap_table import render_gap_table
 from stockiq.frontend.views.components.summary_card import render_spy_summary_card
 
+_VIX_ZONE_COLORS = {
+    "Calm":         ("#22C55E", "rgba(34,197,94,0.10)"),
+    "Normal":       ("#86EFAC", "rgba(134,239,172,0.10)"),
+    "Elevated":     ("#F59E0B", "rgba(245,158,11,0.10)"),
+    "Extreme Fear": ("#EF4444", "rgba(239,68,68,0.10)"),
+}
+
 
 # ── Main dashboard tab ─────────────────────────────────────────────────────────
 
 def render_spy_dashboard_tab() -> None:
-    quote    = get_spy_quote()
+    quote = get_spy_quote()
     if not quote:
         st.error("Could not load SPY data. Please try again in a moment.")
         return
@@ -34,33 +41,53 @@ def render_spy_dashboard_tab() -> None:
     # ── 1. Compact page header + index strip ─────────────────────────────────
     _render_header(quote, overview["indices"])
 
-    # ── 2. SPY technical snapshot (single row) ─────────────────────────────
-    render_spy_summary_card(quote, quote["price"], quote["change"], quote["change_pct"], gap_data["daily_df"])
+    # ── 2. SPY snapshot + signal cells (RSI · VIX · P/C · MAs) ─────────────
+    _rsi, _pc = None, None
+    try:
+        _daily = get_spy_chart_df(period="1y", interval="1d")
+        if not _daily.empty and "RSI" in _daily.columns:
+            _rsi_s = _daily["RSI"].dropna()
+            if not _rsi_s.empty:
+                _rsi = float(_rsi_s.iloc[-1])
+    except Exception:
+        pass
+    try:
+        _pc = get_put_call_ratio(scope="daily")
+    except Exception:
+        pass
+
+    render_spy_summary_card(
+        quote, quote["price"], quote["change"], quote["change_pct"],
+        gap_data["daily_df"],
+        rsi=_rsi,
+        vix_snapshot=overview["vix"],
+        pc_data=_pc,
+    )
 
     st.divider()
 
-    # ── 3. SPY chart ──────────────────────────────────────────────────────────
+    # ── 4. SPY chart (VWAP intraday · options levels daily) ──────────────────
     _render_spy_chart_section(quote)
 
     st.divider()
 
-    # ── 4. AI Forecast slot ───────────────────────────────────────────────────
+    # ── 5. Options Intelligence — Max Pain · OI · P/C (moved up) ─────────────
+    _render_options_section(quote["price"])
+
+    st.divider()
+
+    # ── 6. AI Forecast slot ───────────────────────────────────────────────────
     ai_slot = st.empty()
 
     st.divider()
 
-    # ── 5. SPY gap table ──────────────────────────────────────────────────────
+    # ── 7. SPY gap table ──────────────────────────────────────────────────────
     _render_spy_gap_table(gap_data)
 
     st.divider()
 
-    # ── 6. VIX + Fear gauges ──────────────────────────────────────────────────
+    # ── 8. Fear Gauge — VIX ───────────────────────────────────────────────────
     _render_vix_section(overview["vix"])
-
-    st.divider()
-
-    # ── 7. Options Flow — Max Pain + OI heatmap ───────────────────────────────
-    _render_options_section(quote["price"])
 
     # ── Fill AI slot last ─────────────────────────────────────────────────────
     try:
@@ -119,7 +146,7 @@ def _render_header(quote: dict, idx_df: pd.DataFrame) -> None:
 
 
 def _render_spy_chart_section(quote: dict) -> None:
-    """SPY candlestick chart with period + RSI toggle."""
+    """SPY candlestick: VWAP on Today view, options levels (max pain + walls) on daily views."""
     period_map = {
         "Today": ("1d",  "5m",  [],            True),
         "5D":    ("5d",  "30m", [],            True),
@@ -143,21 +170,53 @@ def _render_spy_chart_section(quote: dict) -> None:
     chart_df = get_spy_chart_df(period=yf_period, interval=interval)
     if chart_df.empty:
         st.info("Chart data unavailable — the market may be closed or data is delayed.")
-    else:
-        prev = quote["prev_close"] if show_prev else None
-        st.plotly_chart(_spy_chart(chart_df, mas, prev, show_rsi=show_rsi), width="stretch")
+        return
+
+    prev = quote["prev_close"] if show_prev else None
+
+    # VWAP for Today intraday view only
+    vwap = None
+    if choice == "Today" and "Volume" in chart_df.columns and not chart_df["Volume"].isna().all():
+        tp   = (chart_df["High"] + chart_df["Low"] + chart_df["Close"]) / 3
+        cumvol = chart_df["Volume"].cumsum()
+        vwap   = (tp * chart_df["Volume"]).cumsum() / cumvol.replace(0, float("nan"))
+
+    # Max pain + call/put walls for daily+ views (cached options fetch)
+    max_pain = call_wall = put_wall = None
+    if not show_prev:
+        try:
+            seed = get_spy_options_analysis(expiration="", current_price=quote["price"])
+            if seed:
+                max_pain = seed["max_pain"]
+                oi_df    = seed["oi_df"]
+                if not oi_df.empty:
+                    call_wall = float(oi_df.loc[oi_df["call_oi"].idxmax(), "strike"])
+                    put_wall  = float(oi_df.loc[oi_df["put_oi"].idxmax(), "strike"])
+        except Exception:
+            pass
+
+    st.plotly_chart(
+        _spy_chart(chart_df, mas, prev, show_rsi=show_rsi,
+                   vwap=vwap, max_pain=max_pain,
+                   call_wall=call_wall, put_wall=put_wall),
+        width="stretch",
+    )
 
 
-_VIX_ZONE_COLORS = {
-    "Calm":         ("#22C55E", "rgba(34,197,94,0.10)"),
-    "Normal":       ("#86EFAC", "rgba(134,239,172,0.10)"),
-    "Elevated":     ("#F59E0B", "rgba(245,158,11,0.10)"),
-    "Extreme Fear": ("#EF4444", "rgba(239,68,68,0.10)"),
-}
+def _render_spy_gap_table(gap_data: dict) -> None:
+    gaps_df = gap_data["gaps_df"]
+    try:
+        parsed    = urllib.parse.urlparse(st.context.url)
+        share_url = f"{parsed.scheme}://{parsed.netloc}/spy-gaps"
+    except Exception:
+        share_url = "/spy-gaps"
+
+    render_gap_table(gaps_df, title="Daily Gaps (Last 30 Days)",
+                     show_rsi=True, show_next_day=True, share_url=share_url)
 
 
 def _render_vix_section(vix_snapshot: dict) -> None:
-    """Compact VIX + P/C fear gauge row, then VIX chart, then gap table."""
+    """VIX zone card + 52w stats + dual-axis chart + gap table."""
     if not vix_snapshot:
         st.info("VIX data unavailable.")
         return
@@ -173,37 +232,14 @@ def _render_vix_section(vix_snapshot: dict) -> None:
     zone     = vix_snapshot["zone"]
     zone_clr, zone_bg = _VIX_ZONE_COLORS.get(zone, ("#94A3B8", "rgba(148,163,184,0.10)"))
 
-    # ── Section label ──────────────────────────────────────────────────────────
     st.markdown(
         '<div style="font-size:11px;font-weight:700;color:#64748B;'
         'letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
-        'Fear Gauges — VIX &amp; Put/Call Ratio</div>',
+        'Fear Gauge — VIX</div>',
         unsafe_allow_html=True,
     )
 
-    # ── Scope selector for P/C ratio ──────────────────────────────────────────
-    _scope_opts  = ["Daily", "7 Days", "14 Days", "21 Days", "Monthly"]
-    _scope_keys  = {
-        "Daily":   "daily",
-        "7 Days":  "7d",
-        "14 Days": "14d",
-        "21 Days": "21d",
-        "Monthly": "monthly",
-    }
-    _scope_notes = {
-        "Daily":   "Today's option volume · 4 nearest expirations · resets each trading day",
-        "7 Days":  "Open interest · expirations within 7 days · very short-term positioning",
-        "14 Days": "Open interest · expirations within 14 days · 2-week hedging horizon",
-        "21 Days": "Open interest · expirations within 21 days · 3-week hedging horizon",
-        "Monthly": "Open interest · all expirations within 30 days · reflects near-term hedging",
-    }
-    _, pc_scope_col = st.columns([2, 1])
-    with pc_scope_col:
-        pc_scope = st.radio("P/C Scope", _scope_opts, horizontal=True, key="pc_scope", index=0)
-    pc = get_put_call_ratio(scope=_scope_keys[pc_scope])
-
-    # ── Gauge row: VIX card | P/C card | VIX stats ────────────────────────────
-    col_vix, col_pc, col_stats = st.columns([1, 1, 2])
+    col_vix, col_stats = st.columns([1, 2])
 
     with col_vix:
         chg_arrow = "▲" if vix_chg >= 0 else "▼"
@@ -224,40 +260,6 @@ def _render_vix_section(vix_snapshot: dict) -> None:
             unsafe_allow_html=True,
         )
 
-    with col_pc:
-        if pc:
-            exp_range = (
-                f"{pc['exp_nearest']} → {pc['exp_farthest']}"
-                if pc["exp_nearest"] != pc["exp_farthest"]
-                else pc["exp_nearest"]
-            )
-            st.markdown(
-                f"""
-<div style="background:rgba(255,255,255,0.03);border:1px solid #1E293B;border-radius:10px;
-            padding:16px;height:100%;box-sizing:border-box">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-    <div style="font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:.07em;
-                text-transform:uppercase">Put / Call Ratio</div>
-    <div style="font-size:10px;font-weight:700;color:#1E293B;background:{pc['color']};
-                border-radius:4px;padding:1px 6px;line-height:1.6">
-      {pc['scope_label']}
-    </div>
-  </div>
-  <div style="font-size:38px;font-weight:900;color:{pc['color']};line-height:1;
-              margin:4px 0">{pc['ratio']:.3f}</div>
-  <div style="font-size:13px;font-weight:700;color:{pc['color']};margin-bottom:6px">
-    {pc['signal']}
-  </div>
-  <div style="font-size:10px;color:#64748B;line-height:1.7">
-    {pc['puts']:,} puts &nbsp;·&nbsp; {pc['calls']:,} calls<br>
-    {pc['exp_count']} expiration{"s" if pc['exp_count'] != 1 else ""} &nbsp;·&nbsp; {exp_range}
-  </div>
-</div>""",
-                unsafe_allow_html=True,
-            )
-        else:
-            st.caption("P/C ratio unavailable")
-
     with col_stats:
         s1, s2 = st.columns(2)
         s1.metric("1Y High",   f"{vix_52hi:.2f}", help="Highest VIX close in the past year")
@@ -266,8 +268,6 @@ def _render_vix_section(vix_snapshot: dict) -> None:
         s2.metric("vs 1Y Avg", f"{vix_now - vix_avg:+.2f}",
                   delta_color="inverse",
                   help="Positive = more fearful than average")
-
-        # Compact zone legend — single line
         st.markdown(
             '<div style="font-size:10px;color:#475569;margin-top:6px;line-height:1.6">'
             '&lt;15 😌 Calm &nbsp;·&nbsp; 15–20 😐 Normal &nbsp;·&nbsp;'
@@ -275,15 +275,7 @@ def _render_vix_section(vix_snapshot: dict) -> None:
             '</div>',
             unsafe_allow_html=True,
         )
-        if pc:
-            st.markdown(
-                f'<div style="font-size:10px;color:#475569;line-height:1.6">'
-                f'P/C &gt;1.2 contrarian bull &nbsp;·&nbsp; 0.8–1.0 neutral &nbsp;·&nbsp; &lt;0.7 contrarian bear'
-                f'<br><span style="color:#334155">{_scope_notes[pc_scope]}</span></div>',
-                unsafe_allow_html=True,
-            )
 
-    # ── VIX chart with period selector ────────────────────────────────────────
     st.markdown("<div style='margin-top:16px'></div>", unsafe_allow_html=True)
 
     _vix_qp = st.query_params.get("vix_period", "1Y")
@@ -298,11 +290,9 @@ def _render_vix_section(vix_snapshot: dict) -> None:
     if not vix_chart_df.empty and "VIX" in vix_chart_df.columns:
         st.plotly_chart(_spy_vix_chart(vix_chart_df), width="stretch")
 
-    # ── VIX gap table in expander ─────────────────────────────────────────────
     vix_gaps = get_vix_gap_history(period=yf_vix_period)
     if not vix_gaps.empty:
-        with st.expander("VIX Daily Gap History", expanded=False):
-            render_gap_table(vix_gaps, title="", price_prefix="")
+        render_gap_table(vix_gaps, title="", price_prefix="")
 
 
 def _spy_vix_chart(df) -> go.Figure:
@@ -372,21 +362,17 @@ def _spy_vix_chart(df) -> go.Figure:
     return fig
 
 
-def _render_spy_gap_table(gap_data: dict) -> None:
-    gaps_df = gap_data["gaps_df"]
-    try:
-        parsed    = urllib.parse.urlparse(st.context.url)
-        share_url = f"{parsed.scheme}://{parsed.netloc}/spy-gaps"
-    except Exception:
-        share_url = "/spy-gaps"
-
-    render_gap_table(gaps_df, title="Daily Gaps (Last 30 Days)",
-                     show_rsi=True, show_next_day=True, share_url=share_url)
-
-
-def _spy_chart(df, ma_periods: list, prev_close: float | None = None,
-               show_rsi: bool = False) -> go.Figure:
-    """Candlestick + volume + optional RSI chart."""
+def _spy_chart(
+    df,
+    ma_periods: list,
+    prev_close: float | None = None,
+    show_rsi: bool = False,
+    vwap: pd.Series | None = None,
+    max_pain: float | None = None,
+    call_wall: float | None = None,
+    put_wall: float | None = None,
+) -> go.Figure:
+    """Candlestick + volume + optional RSI + VWAP + options levels."""
     if show_rsi:
         rows, row_heights = 3, [0.55, 0.2, 0.25]
         vol_row, rsi_row  = 2, 3
@@ -413,11 +399,37 @@ def _spy_chart(df, ma_periods: list, prev_close: float | None = None,
                 name=f"MA{p}",
             ), row=1, col=1)
 
+    if vwap is not None:
+        fig.add_trace(go.Scatter(
+            x=df.index, y=vwap,
+            name="VWAP", mode="lines",
+            line=dict(color="#E879F9", width=1.5, dash="dash"),
+            hovertemplate="VWAP: <b>%{y:,.2f}</b><extra></extra>",
+        ), row=1, col=1)
+
     if prev_close is not None:
         fig.add_hline(y=prev_close, row=1, col=1,
                       line_dash="dot", line_color="#64748B", line_width=1,
                       annotation_text=f"Prev {prev_close:,.2f}",
                       annotation_font_size=9, annotation_position="top right")
+
+    if max_pain is not None:
+        fig.add_hline(y=max_pain, row=1, col=1,
+                      line_dash="dot", line_color="#F59E0B", line_width=1.2,
+                      annotation_text=f"Max Pain {max_pain:,.0f}",
+                      annotation_font_size=9, annotation_position="top left")
+
+    if call_wall is not None:
+        fig.add_hline(y=call_wall, row=1, col=1,
+                      line_dash="dash", line_color="#22C55E", line_width=1,
+                      annotation_text=f"Call Wall {call_wall:,.0f}",
+                      annotation_font_size=9, annotation_position="top right")
+
+    if put_wall is not None:
+        fig.add_hline(y=put_wall, row=1, col=1,
+                      line_dash="dash", line_color="#EF4444", line_width=1,
+                      annotation_text=f"Put Wall {put_wall:,.0f}",
+                      annotation_font_size=9, annotation_position="bottom right")
 
     if "Volume" in df.columns:
         bar_colors = ["#22C55E" if c >= o else "#EF4444"
@@ -463,21 +475,41 @@ def _spy_chart(df, ma_periods: list, prev_close: float | None = None,
 
 
 def _render_options_section(current_price: float) -> None:
-    """Max Pain level card + OI-by-strike butterfly chart."""
+    """Options Intelligence: P/C ratio · Max Pain · OI butterfly."""
     st.markdown(
         '<div style="font-size:11px;font-weight:700;color:#64748B;'
         'letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
-        'Options Flow — Max Pain &amp; Open Interest</div>',
+        'Options Intelligence — Max Pain · Open Interest · Put/Call</div>',
         unsafe_allow_html=True,
     )
 
-    # Seed call (nearest expiration) gives us the full expiration list
+    _scope_opts  = ["Daily", "7 Days", "14 Days", "21 Days", "Monthly"]
+    _scope_keys  = {
+        "Daily":   "daily",
+        "7 Days":  "7d",
+        "14 Days": "14d",
+        "21 Days": "21d",
+        "Monthly": "monthly",
+    }
+    _scope_notes = {
+        "Daily":   "Today's option volume · 4 nearest expirations · resets each trading day",
+        "7 Days":  "Open interest · expirations within 7 days",
+        "14 Days": "Open interest · expirations within 14 days",
+        "21 Days": "Open interest · expirations within 21 days",
+        "Monthly": "Open interest · expirations ≤ 30 days out",
+    }
+    _, pc_scope_col = st.columns([2, 1])
+    with pc_scope_col:
+        pc_scope = st.radio("P/C Scope", _scope_opts, horizontal=True, key="pc_scope", index=0)
+    pc = get_put_call_ratio(scope=_scope_keys[pc_scope])
+
+    # Seed call — nearest expiration + full list
     seed = get_spy_options_analysis(expiration="", current_price=current_price)
     if not seed:
         st.caption("Options data unavailable — market may be closed.")
         return
 
-    exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))  # label → ISO
+    exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))
     exp_col, _ = st.columns([2, 3])
     with exp_col:
         selected_label = st.selectbox(
@@ -488,7 +520,6 @@ def _render_options_section(current_price: float) -> None:
         )
     selected_iso = exp_map[selected_label]
 
-    # Re-fetch (cached) for the chosen expiration
     data = get_spy_options_analysis(expiration=selected_iso, current_price=current_price)
     if not data:
         st.caption("Options data unavailable for this expiration.")
@@ -498,18 +529,56 @@ def _render_options_section(current_price: float) -> None:
     oi_df    = data["oi_df"]
     dist_pct = (current_price - max_pain) / max_pain * 100 if max_pain else 0
 
-    # ── Max pain metric card ──────────────────────────────────────────────────
     if abs(dist_pct) <= 0.5:
-        mp_color, mp_signal = "#22C55E", "Price pinned near max pain — low movement expected"
+        mp_color, mp_signal = "#22C55E", "Pinned near max pain — low movement expected"
     elif abs(dist_pct) <= 2.0:
-        mp_color, mp_signal = "#86EFAC", "Price close to max pain — mild gravitational pull"
+        mp_color, mp_signal = "#86EFAC", "Close to max pain — mild gravitational pull"
     elif abs(dist_pct) <= 4.0:
-        mp_color, mp_signal = "#F59E0B", "Price drifting from max pain — watch for reversion"
+        mp_color, mp_signal = "#F59E0B", "Drifting from max pain — watch for reversion"
     else:
-        mp_color, mp_signal = "#EF4444", "Price far from max pain — strong directional move"
+        mp_color, mp_signal = "#EF4444", "Far from max pain — strong directional move"
 
     dist_arrow = "▲" if dist_pct >= 0 else "▼"
-    mp_col, chart_col = st.columns([1, 3])
+
+    # ── Cards row: P/C | Max Pain | OI chart ─────────────────────────────────
+    pc_col, mp_col, chart_col = st.columns([1, 1, 3])
+
+    with pc_col:
+        if pc:
+            exp_range = (
+                f"{pc['exp_nearest']} → {pc['exp_farthest']}"
+                if pc["exp_nearest"] != pc["exp_farthest"]
+                else pc["exp_nearest"]
+            )
+            st.markdown(
+                f"""
+<div style="background:rgba(255,255,255,0.03);border:1px solid #1E293B;border-radius:10px;
+            padding:16px;height:100%;box-sizing:border-box">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <div style="font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:.07em;
+                text-transform:uppercase">Put / Call</div>
+    <div style="font-size:10px;font-weight:700;color:#1E293B;background:{pc['color']};
+                border-radius:4px;padding:1px 6px;line-height:1.6">
+      {pc['scope_label']}
+    </div>
+  </div>
+  <div style="font-size:38px;font-weight:900;color:{pc['color']};line-height:1;
+              margin:4px 0">{pc['ratio']:.3f}</div>
+  <div style="font-size:12px;font-weight:700;color:{pc['color']};margin-bottom:6px">
+    {pc['signal']}
+  </div>
+  <div style="font-size:10px;color:#64748B;line-height:1.7">
+    {pc['puts']:,} puts &nbsp;·&nbsp; {pc['calls']:,} calls<br>
+    {pc['exp_count']} exp &nbsp;·&nbsp; {exp_range}
+  </div>
+  <div style="font-size:9px;color:#334155;margin-top:6px;line-height:1.5">
+    {_scope_notes[pc_scope]}
+  </div>
+</div>""",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.caption("P/C ratio unavailable")
 
     with mp_col:
         st.markdown(
@@ -528,7 +597,7 @@ def _render_options_section(current_price: float) -> None:
     {mp_signal}
   </div>
   <div style="font-size:9px;color:#334155;margin-top:8px;line-height:1.5">
-    Max pain = strike where all open contracts expire with maximum total loss.
+    Strike where all open contracts expire with maximum loss.
     Price tends to gravitate toward it into expiry.
   </div>
 </div>""",

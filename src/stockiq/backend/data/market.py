@@ -280,7 +280,7 @@ def fetch_index_snapshot() -> pd.DataFrame:
                 period="5d",
                 interval="1d",
                 progress=False,
-                auto_adjust=True,
+                auto_adjust=False,
             )
             if isinstance(hist.columns, pd.MultiIndex):
                 closes = hist["Close"]
