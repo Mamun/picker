@@ -23,8 +23,8 @@ The live app runs on Streamlit Community Cloud and is free to use. No account or
 
 | Page | What it does |
 |------|-------------|
-| **SPY Dashboard** | Real-time SPY price, index strip (S&P 500 / Nasdaq / Dow / Russell / VIX), RSI summary card, candlestick chart with VWAP (intraday) and options levels (daily), Options Intelligence section (Put/Call ratio, Max Pain, OI butterfly), SPY gap table, and VIX Fear Gauge |
-| **SPY AI Outlook** | Claude-powered 10-day SPY directional forecast with technical context — gaps, RSI, price action, key levels |
+| **SPY Dashboard** | Real-time SPY price with data timestamp (Yahoo + CBOE parallel fetch, freshest wins), index strip (S&P 500 / Nasdaq / Dow / Russell / VIX), RSI summary card, candlestick chart with VWAP (intraday) and options levels (daily), Options Intelligence section (Put/Call ratio by scope, Max Pain, OI butterfly), SPY gap table, and VIX Fear Gauge |
+| **SPY AI Outlook** | AI-powered 10-day SPY directional forecast — choose from **5 providers**: Groq (Llama 3.3 70B, free), Gemini 2.5 Flash (Google, free), DeepSeek-V3 (DeepSeek), GPT-4.1 Mini (OpenAI), or Claude (Anthropic). Context includes gaps, RSI, price action, key levels, and options flow (max pain, call/put wall) |
 | **SPY Gap Table** | Every daily gap since 2022, live fill status, intraday High/Low, RSI, and next-day direction — shareable standalone URL |
 
 ### S&P 500 Tools
@@ -52,14 +52,14 @@ The live app runs on Streamlit Community Cloud and is free to use. No account or
 ## Screenshots
 
 ### SPY Dashboard
-Full-page market hub: live SPY price, index strip, candlestick chart with VWAP, Options Intelligence (Max Pain, Put/Call ratio, OI butterfly), gap table, and VIX Fear Gauge.
+Full-page market hub: live SPY price with data timestamp, index strip, candlestick chart with VWAP, Options Intelligence (Max Pain, Put/Call ratio, OI butterfly), gap table, and VIX Fear Gauge.
 
 ![SPY Gap Table](docs/screenshots/spy_gaptable.png)
 
 ---
 
 ### AI-Powered SPY Outlook
-Claude analyses recent gaps, RSI, and price action to generate a 10-day directional outlook with key levels and a plain-English rationale.
+Choose your AI provider — Groq, Gemini, DeepSeek, OpenAI, or Claude. The model analyses recent gaps, RSI, price action, and options flow (max pain, call/put wall) to generate a 10-day directional outlook with key levels and a plain-English rationale.
 
 ![SPY AI Forecast](docs/screenshots/spy_ai_claude_forecast.png)
 
@@ -84,7 +84,7 @@ Curated ETF categories — Retail Favorites, Semiconductors, Software — ranked
 ### Prerequisites
 
 - Python 3.11 or 3.12
-- An [Anthropic API key](https://console.anthropic.com/) (only required for the AI Outlook page)
+- An API key for at least one AI provider (only required for the AI Outlook page — see Configuration below)
 
 ### Installation
 
@@ -100,16 +100,22 @@ pip install -e .            # installs the stockiq package + all dependencies
 
 ### Configuration
 
-Create `.streamlit/secrets.toml`:
+Create `.streamlit/secrets.toml` and add the API keys for the providers you want to use.
+At least one AI provider key is needed for the SPY AI Outlook page — all free-tier providers work out of the box:
 
 ```toml
-ANTHROPIC_API_KEY = "sk-ant-..."
+# AI providers — add whichever you want to use (all optional individually)
+GROQ_API_KEY      = "gsk_..."        # free — console.groq.com/keys
+GOOGLE_API_KEY    = "AIza..."        # free — aistudio.google.com/apikey
+DEEPSEEK_API_KEY  = "sk-..."         # platform.deepseek.com/api_keys
+OPENAI_API_KEY    = "sk-proj-..."    # platform.openai.com/api-keys
+ANTHROPIC_API_KEY = "sk-ant-..."     # console.anthropic.com/settings/keys
 ```
 
-Or set the environment variable directly:
+Or set keys as environment variables:
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
+export GROQ_API_KEY="gsk_..."
 ```
 
 ### Run
@@ -149,31 +155,35 @@ Tests are network-free — all `yfinance` calls are mocked.
 ```
 .
 ├── app.py                          # Streamlit entry point — navigation wiring
-├── src/stockiq/
-│   ├── config.py                   # MA periods, colors, Fibonacci levels, ticker universe
-│   ├── backend/
-│   │   ├── models/                 # Pure data models (indicators, signals, options, spy context)
-│   │   ├── data/
-│   │   │   ├── yf_fetch.py         # yfinance OHLCV download & company search
-│   │   │   ├── market.py           # SPY/VIX/index snapshot helpers (TTL-cached)
-│   │   │   ├── screeners/          # Per-strategy screener modules (candle, analyst, volatility, ETF, …)
-│   │   │   ├── local_ohlc_cache.py # Local OHLC cache for gap detection
-│   │   │   ├── local_gap_cache.py  # Local gap cache
-│   │   │   └── gcs_*.py            # GCS-backed caches (fundamentals, short interest, analyst consensus)
-│   │   ├── services/
-│   │   │   ├── spy_service.py      # SPY quote, chart, gap table
-│   │   │   ├── market_service.py   # VIX, indices, put/call ratio, options analysis
-│   │   │   ├── spy_dashboard_service.py  # Facade combining spy + market for the dashboard page
-│   │   │   ├── analyzer_service.py # Per-ticker technical analysis pipeline
-│   │   │   ├── ai_forecast_service.py    # Claude forecast composition
-│   │   │   └── scanners/           # Scanner services (NASDAQ, SPX, ETF, pre-market)
-│   │   ├── llm/                    # Claude provider + prompt templates
-│   │   └── cache.py                # TTL cache decorator
-│   └── frontend/
-│       └── views/                  # Streamlit page modules (one file per page)
-│           └── components/         # Reusable UI components (charts, gap table, summary card)
-├── scripts/                        # Offline GCS cache build scripts
-└── tests/                          # pytest test suite
+├── cache/
+│   ├── screener/                   # Pre-built screener JSON files (fundamentals, analyst, etc.)
+│   └── scripts/                    # Offline scripts to rebuild the screener cache
+├── config/
+│   ├── indicators.yml              # MA periods, Fibonacci levels (shared frontend/backend)
+│   └── screeners.yml               # Ticker universes, scan limits
+└── src/stockiq/
+    ├── backend/
+    │   ├── config/                 # Backend-only config (app.yml, cache.yml, TTLs, provider order)
+    │   ├── models/                 # Pure data models (indicators, signals, options, spy context)
+    │   ├── data/
+    │   │   ├── spy.py              # SPY price, intraday bars, options chain, put/call ratio (Yahoo + CBOE)
+    │   │   ├── market.py           # VIX/index snapshot helpers (TTL-cached)
+    │   │   ├── yf_fetch.py         # yfinance OHLCV download & company search
+    │   │   ├── screeners/          # Per-strategy screener modules (spx_*, nasdaq_*, etf_*)
+    │   │   ├── cache/              # Pre-built screener cache loaders (metadata, fundamentals, analyst, short interest)
+    │   │   ├── local_ohlc_cache.py # Local OHLC cache for gap detection
+    │   │   └── local_gap_cache.py  # Local gap cache
+    │   ├── services/
+    │   │   ├── spy_service.py      # SPY quote (parallel Yahoo+CBOE fetch), chart, gap table, options analysis
+    │   │   ├── market_service.py   # VIX, indices, put/call ratio
+    │   │   ├── ai_forecast_service.py  # Multi-provider AI forecast composition
+    │   │   ├── analyzer_service.py # Per-ticker technical analysis pipeline
+    │   │   └── scanners/           # Scanner services (NASDAQ, SPX, ETF, pre-market)
+    │   ├── llm/                    # Multi-provider LLM wrappers (Groq, Gemini, DeepSeek, OpenAI, Anthropic)
+    │   └── cache.py                # TTL cache decorator
+    └── frontend/
+        └── views/                  # Streamlit page modules (one file per page)
+            └── components/         # Reusable UI components (charts, gap table, summary card)
 ```
 
 ---
@@ -187,8 +197,22 @@ Tests are network-free — all `yfinance` calls are mocked.
 | [Plotly](https://plotly.com/python/) | Interactive charts |
 | [pandas](https://pandas.pydata.org) | Data manipulation |
 | [NumPy](https://numpy.org) | Numerical computation |
+| [Groq SDK](https://github.com/groq/groq-python) | Llama 3.3 70B AI forecast (free tier) |
+| [Google GenAI SDK](https://github.com/googleapis/python-genai) | Gemini 2.5 Flash AI forecast (free tier) |
 | [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-python) | Claude AI forecast |
-| [Google Cloud Storage](https://cloud.google.com/storage) | Pre-built screener cache (GCS bucket) |
+| [requests](https://requests.readthedocs.io) | DeepSeek & OpenAI REST API calls |
+
+---
+
+## AI Provider Comparison
+
+| Provider | Model | Free Tier | Sign Up |
+|----------|-------|-----------|---------|
+| **Groq** | Llama 3.3 70B | Yes | [console.groq.com/keys](https://console.groq.com/keys) |
+| **Google** | Gemini 2.5 Flash | Yes | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| **DeepSeek** | DeepSeek-V3 | Pay-as-you-go (very cheap) | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| **OpenAI** | GPT-4.1 Mini | Pay-as-you-go | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **Anthropic** | Claude Opus | Pay-as-you-go | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
 
 ---
 
@@ -219,7 +243,7 @@ StockIQ is free and open source. Hosting, API costs, and development time are fu
 
 Your sponsorship helps keep the project free for everyone and funds:
 
-- Anthropic API costs for the AI Outlook feature
+- AI provider API costs for the SPY Outlook feature
 - Ongoing data-quality improvements
 - New screeners and indicators requested by the community
 
