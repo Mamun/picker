@@ -8,8 +8,8 @@ from stockiq.backend.models.spy_context import (
     is_market_open,
     next_market_open_str,
 )
-from stockiq.backend.services.market_service import get_put_call_ratio, get_vix_chart_df
-from stockiq.backend.services.spy_service import get_spy_chart_df, get_spy_quote
+from stockiq.backend.services.market_service import get_vix_chart_df
+from stockiq.backend.services.spy_service import get_put_call_ratio, get_spy_chart_df, get_spy_quote
 
 
 def get_providers() -> dict[str, dict]:

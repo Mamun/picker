@@ -7,8 +7,8 @@ from ._shared import (
 )
 
 
-@ttl_cache(CACHE_TTL["fetch_candle_momentum_scan"])
-def fetch_candle_momentum_scan() -> pd.DataFrame:
+@ttl_cache(CACHE_TTL["fetch_spx_candle_momentum_scan"])
+def fetch_spx_candle_momentum_scan() -> pd.DataFrame:
     """
     Weekly/monthly candle screener for SPX_TICKERS.
 

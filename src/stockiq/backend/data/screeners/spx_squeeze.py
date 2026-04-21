@@ -7,8 +7,8 @@ from ._shared import (
 )
 
 
-@ttl_cache(CACHE_TTL["fetch_squeeze_scan"])
-def fetch_squeeze_scan(
+@ttl_cache(CACHE_TTL["fetch_spx_squeeze_scan"])
+def fetch_spx_squeeze_scan(
     rsi_min: float = 55.0,
     min_short_float: float = 0.5,
     top_n: int = 30,

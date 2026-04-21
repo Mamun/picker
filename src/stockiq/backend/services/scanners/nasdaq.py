@@ -3,9 +3,9 @@
 import pandas as pd
 
 from stockiq.backend.data.screeners import (
+    fetch_nasdaq_premarket_history,
+    fetch_nasdaq_premarket_scan,
     fetch_nasdaq_rsi_scan,
-    fetch_premarket_history,
-    fetch_premarket_scan,
 )
 
 
@@ -22,6 +22,6 @@ def get_premarket_scan() -> dict:
         {"scan": DataFrame, "history": DataFrame}
     """
     return {
-        "scan":    fetch_premarket_scan(),
-        "history": fetch_premarket_history(),
+        "scan":    fetch_nasdaq_premarket_scan(),
+        "history": fetch_nasdaq_premarket_history(),
     }

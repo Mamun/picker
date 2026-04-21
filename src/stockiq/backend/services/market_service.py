@@ -1,20 +1,13 @@
-"""Market-wide data service (indices, VIX, put/call ratio, options analysis)."""
+"""Market-wide data service (indices, VIX)."""
 
 import pandas as pd
 
 from stockiq.backend.data.market import (
     fetch_index_snapshot,
-    fetch_put_call_ratio,
-    fetch_spy_options_data,
     fetch_vix_history,
     fetch_vix_ohlc,
 )
 from stockiq.backend.models.indicators import compute_daily_gaps
-from stockiq.backend.models.options import (
-    compute_max_pain,
-    compute_oi_by_strike,
-    label_expirations,
-)
 
 _VIX_ZONES = [
     (15,  "Calm"),
@@ -39,36 +32,15 @@ def get_vix_ohlc_df(period: str = "1y") -> pd.DataFrame:
     return fetch_vix_ohlc(period=period)
 
 
-def get_put_call_ratio(scope: str = "daily") -> dict | None:
-    """SPY put/call ratio with sentiment signal. scope: 'daily' | 'monthly' | 'quarterly'."""
-    return fetch_put_call_ratio(scope=scope)
-
-
 def _get_vix_snapshot(period: str = "1y") -> dict:
-    """
-    VIX stats pre-computed from daily history.
-
-    Returns:
-        {
-          "df":         DataFrame (SPY + VIX closes, for charting)
-          "current":    float
-          "prev_close": float
-          "change":     float
-          "high_52w":   float
-          "low_52w":    float
-          "avg":        float
-          "zone":       "Calm" | "Normal" | "Elevated" | "Extreme Fear"
-        }
-    Returns an empty dict if data is unavailable.
-    """
     df = fetch_vix_history(period=period)
     if df.empty or "VIX" not in df.columns:
         return {}
 
-    vix       = df["VIX"]
-    current   = float(vix.iloc[-1])
-    prev      = float(vix.iloc[-2]) if len(vix) > 1 else current
-    zone      = next(name for threshold, name in _VIX_ZONES if current < threshold)
+    vix     = df["VIX"]
+    current = float(vix.iloc[-1])
+    prev    = float(vix.iloc[-2]) if len(vix) > 1 else current
+    zone    = next(name for threshold, name in _VIX_ZONES if current < threshold)
 
     return {
         "df":         df,
@@ -88,42 +60,6 @@ def get_vix_gap_history(period: str = "1y") -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
     return compute_daily_gaps(df)
-
-
-def get_spy_options_analysis(
-    expiration: str = "",
-    current_price: float = 0.0,
-) -> dict | None:
-    """
-    Max pain + OI-by-strike for one SPY expiration.
-
-    Returns:
-        {
-          "max_pain":    float         — strike where total OI dollar pain is minimised
-          "oi_df":       DataFrame     — columns: strike, call_oi, put_oi (30 strikes around price)
-          "expiration":  str           — ISO date used
-          "expirations": list[str]     — all available ISO dates
-          "exp_labels":  list[str]     — human-readable labels e.g. "Apr 25 (5d)"
-        }
-    or None if options data is unavailable.
-    """
-    data = fetch_spy_options_data(expiration=expiration)
-    if not data:
-        return None
-
-    calls = data["calls"]
-    puts  = data["puts"]
-
-    max_pain = compute_max_pain(calls, puts)
-    oi_df    = compute_oi_by_strike(calls, puts, current_price or max_pain)
-
-    return {
-        "max_pain":    max_pain,
-        "oi_df":       oi_df,
-        "expiration":  data["expiration"],
-        "expirations": data["expirations"],
-        "exp_labels":  label_expirations(data["expirations"]),
-    }
 
 
 def get_market_overview() -> dict:

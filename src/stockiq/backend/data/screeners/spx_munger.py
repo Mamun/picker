@@ -61,8 +61,8 @@ def _proximity_score(dist_pct: float) -> int:
     return 0
 
 
-@ttl_cache(CACHE_TTL["fetch_munger_strategy_scan"])
-def fetch_munger_strategy_scan(
+@ttl_cache(CACHE_TTL["fetch_spx_munger_scan"])
+def fetch_spx_munger_scan(
     threshold_pct: float = 15.0,
     min_quality: float = 30.0,
     top_n: int = 30,

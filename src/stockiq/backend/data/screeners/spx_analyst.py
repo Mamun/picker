@@ -8,8 +8,8 @@ from ._shared import (
 )
 
 
-@ttl_cache(CACHE_TTL["fetch_strong_buy_scan"])
-def fetch_strong_buy_scan(
+@ttl_cache(CACHE_TTL["fetch_spx_strong_buy_scan"])
+def fetch_spx_strong_buy_scan(
     min_upside: float = 5.0,
     min_analysts: int = 5,
     max_rating: float = 2.5,
@@ -130,8 +130,8 @@ def fetch_strong_buy_scan(
     )
 
 
-@ttl_cache(CACHE_TTL["fetch_strong_sell_scan"])
-def fetch_strong_sell_scan(
+@ttl_cache(CACHE_TTL["fetch_spx_strong_sell_scan"])
+def fetch_spx_strong_sell_scan(
     min_downside: float = 0.0,
     min_analysts: int = 1,
     min_rating: float = 2.5,

@@ -5,16 +5,18 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from stockiq.backend.services.spy_dashboard_service import (
+from stockiq.backend.services.market_service import (
     get_market_overview,
+    get_vix_chart_df,
+    get_vix_gap_history,
+    get_vix_ohlc_df,
+)
+from stockiq.backend.services.spy_service import (
     get_put_call_ratio,
     get_spy_chart_df,
     get_spy_gap_table_data,
     get_spy_options_analysis,
     get_spy_quote,
-    get_vix_chart_df,
-    get_vix_gap_history,
-    get_vix_ohlc_df,
 )
 from stockiq.frontend.views.ai_forecast import render_ai_forecast
 from stockiq.frontend.views.components.gap_table import render_gap_table
@@ -506,11 +508,7 @@ def _render_options_section(current_price: float) -> None:
     # Seed call — nearest expiration + full list
     seed = get_spy_options_analysis(expiration="", current_price=current_price)
     if not seed:
-        st.info(
-            "⚠️ Options data unavailable. Yahoo Finance blocks options chain requests "
-            "from cloud/server IPs. This section works when running the app locally.",
-            icon=None,
-        )
+        st.caption("Options intelligence is currently disabled.")
         return
 
     exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))

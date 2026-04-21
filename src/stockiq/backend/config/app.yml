@@ -1,0 +1,12 @@
+# Application configuration
+# Controls runtime behaviour without requiring code changes.
+
+options:
+  # Provider order for SPY options chain and put/call ratio.
+  # Each provider is tried in sequence; the first one that returns
+  # non-zero open interest wins.
+  #
+  # Available providers:
+  #   yahoo  — Yahoo Finance (real-time during market hours, may be blocked on server IPs)
+  #   cboe   — CBOE CDN     (15-min delayed, always reachable, official source)
+  spy_providers: [yahoo, cboe]

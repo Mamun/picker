@@ -5,14 +5,16 @@ Reads from:
   config/indicators.yml          — MA periods, Fibonacci levels (shared with frontend)
   config/screeners.yml           — ticker universes, scan limits (backend-only)
   src/stockiq/backend/config/cache.yml — per-function TTL values (backend-only)
+  src/stockiq/backend/config/app.yml   — runtime app settings (providers, feature flags)
 
 Exports:
-  CACHE_TTL             — per-function cache TTL values (seconds)
-  MA_PERIODS            — moving-average window sizes used in calculations
-  FIB_LEVELS            — Fibonacci retracement levels used in calculations
-  SPX_TICKERS           — S&P 500 ticker universe for scanners
-  NASDAQ_100_TICKERS    — NASDAQ-100 ticker universe
-  SCREENER_TICKER_COUNT — how many SPX tickers to scan (env-overridable)
+  CACHE_TTL                — per-function cache TTL values (seconds)
+  MA_PERIODS               — moving-average window sizes used in calculations
+  FIB_LEVELS               — Fibonacci retracement levels used in calculations
+  SPX_TICKERS              — S&P 500 ticker universe for scanners
+  NASDAQ_100_TICKERS       — NASDAQ-100 ticker universe
+  SCREENER_TICKER_COUNT    — how many SPX tickers to scan (env-overridable)
+  OPTIONS_SPY_PROVIDERS    — ordered list of options data providers for SPY
 """
 
 import os
@@ -22,6 +24,12 @@ import yaml
 
 _backend_dir = Path(__file__).parent
 _root_config = Path(__file__).parent.parent.parent.parent.parent / "config"
+
+# ── App settings (backend-only) ───────────────────────────────────────────────
+with open(_backend_dir / "app.yml") as _f:
+    _app: dict = yaml.safe_load(_f)
+
+OPTIONS_SPY_PROVIDERS: list[str] = _app["options"]["spy_providers"]
 
 # ── Cache TTLs (backend-only) ──────────────────────────────────────────────────
 with open(_backend_dir / "cache.yml") as _f:
