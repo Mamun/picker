@@ -14,13 +14,13 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 import yfinance as yf
 
 from stockiq.backend.config import SPX_TICKERS  # noqa: E402
 
-_OUTPUT_FILE = Path(__file__).parent.parent / "cache" / "screener" / "ticker_metadata.json"
+_OUTPUT_FILE = Path(__file__).parent.parent / "screener" / "ticker_metadata.json"
 _BATCH_SIZE  = 20
 _BATCH_PAUSE = 2.0
 

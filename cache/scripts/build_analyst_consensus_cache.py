@@ -1,15 +1,16 @@
 """
-Build fundamentals cache (Munger-style quality metrics).
+Build analyst consensus cache.
 
-Fetches returnOnEquity, profitMargins, revenueGrowth, debtToEquity, earningsGrowth
-for every ticker in the SPX universe via yfinance.
+Fetches recommendationMean, numberOfAnalystOpinions, targetMeanPrice,
+targetHighPrice, targetLowPrice for every SPX ticker via yfinance.
 
-Fundamentals update quarterly (earnings cycle) — run this after each earnings season.
+Analyst consensus updates weekly — run this once a week.
+Current price is intentionally excluded; it's fetched live in the app.
 
 Usage (from project root):
-    python scripts/build_fundamentals_cache.py
+    python scripts/build_analyst_consensus_cache.py
 
-Writes to: cache/screener/fundamentals.json
+Writes to: cache/screener/analyst_consensus.json
 """
 
 import json
@@ -17,26 +18,26 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 import yfinance as yf
 
 from stockiq.backend.config import SPX_TICKERS  # noqa: E402
 
-_OUTPUT_FILE = Path(__file__).parent.parent / "cache" / "screener" / "fundamentals.json"
+_OUTPUT_FILE = Path(__file__).parent.parent / "screener" / "analyst_consensus.json"
 _BATCH_SIZE  = 10
 _BATCH_PAUSE = 3.0
 
 _FIELDS = [
-    "returnOnEquity",
-    "profitMargins",
-    "revenueGrowth",
-    "debtToEquity",
-    "earningsGrowth",
+    "recommendationMean",
+    "numberOfAnalystOpinions",
+    "targetMeanPrice",
+    "targetHighPrice",
+    "targetLowPrice",
 ]
 
 
-def fetch_fundamentals(tickers: list[str]) -> dict[str, dict]:
+def fetch_analyst_consensus(tickers: list[str]) -> dict[str, dict]:
     data: dict[str, dict] = {}
     total = len(tickers)
 
@@ -61,17 +62,17 @@ def fetch_fundamentals(tickers: list[str]) -> dict[str, dict]:
 
 def main() -> None:
     tickers = SPX_TICKERS
-    print(f"Building fundamentals cache for {len(tickers)} tickers → {_OUTPUT_FILE}\n")
+    print(f"Building analyst consensus cache for {len(tickers)} tickers → {_OUTPUT_FILE}\n")
 
-    data = fetch_fundamentals(tickers)
+    data = fetch_analyst_consensus(tickers)
 
-    with_roe = sum(1 for v in data.values() if v.get("returnOnEquity") is not None)
-    print(f"\nFetched: {len(data)} tickers  ({with_roe} with ROE data)")
+    with_rating = sum(1 for v in data.values() if v.get("recommendationMean") is not None)
+    print(f"\nFetched: {len(data)} tickers  ({with_rating} with analyst ratings)")
 
     _OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     _OUTPUT_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Saved → {_OUTPUT_FILE}")
-    print("Done. Refresh quarterly after each earnings season.")
+    print("Done. Refresh weekly — analyst consensus changes slowly.")
 
 
 if __name__ == "__main__":

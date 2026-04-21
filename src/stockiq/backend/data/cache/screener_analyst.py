@@ -15,7 +15,7 @@ from typing import TypedDict
 
 logger = logging.getLogger(__name__)
 
-_CACHE_FILE = Path(__file__).parent.parent.parent.parent.parent / "cache" / "screener" / "analyst_consensus.json"
+_CACHE_FILE = Path(__file__).parent.parent.parent.parent.parent.parent / "cache" / "screener" / "analyst_consensus.json"
 _cache: dict | None = None
 
 
