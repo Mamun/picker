@@ -148,11 +148,15 @@ def build_forecast_context(
 
     if options_flow:
         context["options_flow"] = {
-            "expiration": options_flow["expiration"],
-            "max_pain":   options_flow["max_pain"],
-            "dist_pct":   options_flow["dist_pct"],
-            "call_wall":  options_flow["call_wall"],
-            "put_wall":   options_flow["put_wall"],
+            "expiration":        options_flow["expiration"],
+            "expected_move_dte": options_flow.get("expected_move_dte"),
+            "expected_move":     options_flow.get("expected_move"),
+            "max_pain":          options_flow["max_pain"],
+            "dist_pct":          options_flow["dist_pct"],
+            "call_wall":         options_flow["call_wall"],
+            "put_wall":          options_flow["put_wall"],
+            "total_gex_b":       options_flow.get("total_gex_b"),
+            "gex_peak_support":  options_flow.get("gex_peak_support"),
         }
 
     return json.dumps(context)

@@ -13,12 +13,17 @@ def render_ai_forecast_page() -> None:
 **Data inputs (updated hourly)**
 - Last 15 trading days of SPY opening gaps, gap fill status, and RSI
 - Live SPY price, prev close, day high/low
+- VIX level, regime, and 5-day trend
+- Put/Call ratio with sentiment signal
+- Options chain: Max Pain, Call Wall, Put Wall, Gamma Exposure (GEX), Expected Move
 
-**AI reasoning (Claude Opus)**
+**AI reasoning**
 - Identifies unfilled gaps above/below current price — these act as price magnets
 - Reads RSI zone (overbought ≥ 70 / oversold ≤ 30) to gauge reversal probability
-- Analyses recent next-day momentum patterns (▲/▼ streaks)
-- Calibrates confidence and range width based on signal strength
+- Analyses VIX regime: Elevated/Extreme Fear applies bearish lean and widens ranges
+- Uses GEX sign to detect gamma regime: positive GEX → dealers dampen moves; negative GEX → moves can accelerate
+- Anchors day-1 range to the options-implied Expected Move (±1σ), widens for subsequent days
+- Calibrates confidence and range width based on combined signal strength
 
 **Output**
 - 10 trading days of directional bias, estimated close, intraday range, and a one-line reason

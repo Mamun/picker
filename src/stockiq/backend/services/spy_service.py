@@ -175,7 +175,7 @@ def get_spy_options_analysis(
     max_pain      = compute_max_pain(data["calls"], data["puts"])
     oi_df         = compute_oi_by_strike(data["calls"], data["puts"], current_price or max_pain)
     gex_df        = compute_gex(data["calls"], data["puts"], current_price or max_pain, data["expiration"])
-    expected_move = compute_expected_move(data["calls"], data["puts"], current_price or max_pain)
+    expected_move = compute_expected_move(data["calls"], data["puts"], current_price or max_pain, data["expiration"])
 
     return {
         "max_pain":      max_pain,

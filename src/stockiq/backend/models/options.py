@@ -132,26 +132,82 @@ def compute_expected_move(
     calls: pd.DataFrame,
     puts: pd.DataFrame,
     current_price: float,
+    expiration: str = "",
 ) -> dict | None:
     """
-    Expected move from ATM straddle price (call mid + put mid at nearest strike).
-    Represents 1-sigma implied range by expiration (~68% probability).
-    Returns {'move', 'pct', 'atm_strike', 'low', 'high'} or None.
+    Expected move as 1-sigma implied range by expiration (~68% probability).
+
+    Primary method: ATM straddle mid-price (call + put).
+    Fallback: ATM implied volatility × spot × √(DTE/365) — works when bid/ask
+    are unavailable (CBOE provider) or zero (market closed).
+    Returns {'move', 'pct', 'atm_strike', 'low', 'high', 'method'} or None.
     """
-    def _mid(df: pd.DataFrame, strike: float) -> float:
-        row = df[df["strike"] == strike]
+    def _nearest_strike(df: pd.DataFrame, price: float) -> float | None:
+        s = df["strike"].values
+        return float(s[np.argmin(np.abs(s - price))]) if len(s) else None
+
+    def _mid(df: pd.DataFrame, target_strike: float) -> float:
+        # Find exact row; fall back to nearest strike if exact match missing
+        row = df[df["strike"] == target_strike]
+        if row.empty:
+            nearest = _nearest_strike(df, target_strike)
+            if nearest is None:
+                return 0.0
+            row = df[df["strike"] == nearest]
         if row.empty:
             return 0.0
-        bid  = float(row["bid"].iloc[0])  if "bid"       in row.columns else 0.0
-        ask  = float(row["ask"].iloc[0])  if "ask"       in row.columns else 0.0
+        bid  = float(row["bid"].iloc[0])       if "bid"       in row.columns else 0.0
+        ask  = float(row["ask"].iloc[0])       if "ask"       in row.columns else 0.0
         last = float(row["lastPrice"].iloc[0]) if "lastPrice" in row.columns else 0.0
-        return (bid + ask) / 2 if bid > 0 and ask > 0 else last
+        # Prefer mid; use whichever side is available rather than requiring both
+        if bid > 0 and ask > 0:
+            return (bid + ask) / 2
+        if bid > 0:
+            return bid
+        if ask > 0:
+            return ask
+        return last
 
-    strikes = calls["strike"].values
-    if len(strikes) == 0:
+    def _atm_iv(df: pd.DataFrame, target_strike: float) -> float:
+        """Return IV at the nearest available strike; 0.0 if unavailable."""
+        if "impliedVolatility" not in df.columns:
+            return 0.0
+        nearest = _nearest_strike(df, target_strike)
+        if nearest is None:
+            return 0.0
+        row = df[df["strike"] == nearest]
+        if row.empty:
+            return 0.0
+        return float(row["impliedVolatility"].iloc[0])
+
+    # ATM = nearest strike to current_price across both calls and puts combined
+    all_strikes = np.union1d(calls["strike"].values, puts["strike"].values)
+    if len(all_strikes) == 0:
         return None
-    atm = float(strikes[np.argmin(np.abs(strikes - current_price))])
-    em  = _mid(calls, atm) + _mid(puts, atm)
+    atm = float(all_strikes[np.argmin(np.abs(all_strikes - current_price))])
+
+    # Primary: straddle mid-price
+    em     = _mid(calls, atm) + _mid(puts, atm)
+    method = "straddle"
+
+    # Fallback: IV-based when straddle yields zero (CBOE data or market closed)
+    if em <= 0:
+        iv_c = _atm_iv(calls, atm)
+        iv_p = _atm_iv(puts,  atm)
+        iv   = (iv_c + iv_p) / 2 if iv_c > 0 and iv_p > 0 else max(iv_c, iv_p)
+        if iv > 0:
+            dte = 0
+            if expiration:
+                try:
+                    dte = (datetime.strptime(expiration, "%Y-%m-%d").date()
+                           - datetime.today().date()).days
+                except Exception:
+                    pass
+            # For same-day or past expiry use intraday DTE (0.5 trading day)
+            t = max(dte, 0.5) / 365.0
+            em     = current_price * iv * np.sqrt(t)
+            method = "iv-based"
+
     if em <= 0:
         return None
     return {
@@ -160,6 +216,7 @@ def compute_expected_move(
         "atm_strike": atm,
         "low":        round(current_price - em, 2),
         "high":       round(current_price + em, 2),
+        "method":     method,
     }
 
 

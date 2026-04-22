@@ -334,9 +334,82 @@ def _render_options_section(current_price: float) -> None:
         unsafe_allow_html=True,
     )
 
+    # Seed call — nearest expiration + full list
+    seed = get_spy_options_analysis(expiration="", current_price=current_price)
+    if not seed:
+        st.caption("Options intelligence is currently disabled.")
+        return
+
+    exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))
+
+    # ── "What is?" expander — built from seed (nearest exp) before selectors ──
+    _s_oi      = seed.get("oi_df", pd.DataFrame())
+    _s_gex     = seed.get("gex_df", pd.DataFrame())
+    _s_em      = seed.get("expected_move")
+    _s_mp      = seed["max_pain"]
+    _s_lbl     = seed["exp_labels"][0] if seed["exp_labels"] else ""
+    _s_dist    = (current_price - _s_mp) / _s_mp * 100 if _s_mp else 0
+    _s_mp_sig  = (
+        "Pinned near max pain — low movement expected"   if abs(_s_dist) <= 0.5 else
+        "Close to max pain — mild gravitational pull"    if abs(_s_dist) <= 2.0 else
+        "Drifting from max pain — watch for reversion"  if abs(_s_dist) <= 4.0 else
+        "Far from max pain — strong directional move"
+    )
+    _s_pc      = get_put_call_ratio(scope="daily")
+    _total_gex = _s_gex["gex"].sum() if not _s_gex.empty else None
+    _gex_b     = f"{_total_gex / 1e9:+.1f}B" if _total_gex is not None else "N/A"
+    _gex_sign  = "positive" if (_total_gex or 0) >= 0 else "negative"
+    _gex_behavior = (
+        "dealers are net long gamma — they buy dips and sell rips, keeping SPY range-bound"
+        if (_total_gex or 0) >= 0
+        else "dealers are net short gamma — their hedging amplifies moves, so drops can accelerate"
+    )
+    _peak_sup  = (
+        f"${float(_s_gex.loc[_s_gex['gex'].idxmax(), 'strike']):,.0f}"
+        if not _s_gex.empty else "N/A"
+    )
+    _peak_res  = (
+        f"${float(_s_gex.loc[_s_gex['gex'].idxmin(), 'strike']):,.0f}"
+        if not _s_gex.empty else "N/A"
+    )
+    _pc_txt = (
+        f"P/C ratio is **{_s_pc['ratio']:.3f}** ({_s_pc['signal']}) — "
+        f"{_s_pc['puts']:,} puts vs {_s_pc['calls']:,} calls across {_s_pc['exp_count']} expirations. "
+        + (
+            "Ratio above 1.0 means more puts than calls — the market is hedging or fearful."
+            if _s_pc["ratio"] >= 1.0
+            else "Ratio below 1.0 means more calls than puts — the market is leaning bullish or complacent."
+        )
+        if _s_pc else "P/C ratio unavailable."
+    )
+    _call_wall = (
+        f"${float(_s_oi.loc[_s_oi['call_oi'].idxmax(), 'strike']):,.0f}"
+        if not _s_oi.empty else "N/A"
+    )
+    _put_wall  = (
+        f"${float(_s_oi.loc[_s_oi['put_oi'].idxmax(), 'strike']):,.0f}"
+        if not _s_oi.empty else "N/A"
+    )
+    _walls_txt = (
+        f"Call wall at **{_call_wall}** (dealers sell SPY as price approaches there, capping upside). "
+        f"Put wall at **{_put_wall}** (dealers buy SPY as price drops there, providing a floor). "
+        f"SPY is currently at **${current_price:,.2f}**."
+        if not _s_oi.empty else "Wall data unavailable."
+    )
+    _mp_txt = (
+        f"SPY is currently **${current_price:,.2f}**, which is "
+        f"**{abs(_s_dist):.1f}% {'above' if _s_dist >= 0 else 'below'}** max pain "
+        f"(**${_s_mp:,.0f}**). {_s_mp_sig}."
+    )
+    _em_txt = (
+        f"±**${_s_em['move']:,.2f}** (±{_s_em['pct']:.1f}%) — "
+        f"implied range **${_s_em['low']:,.2f} – ${_s_em['high']:,.2f}** by {_s_lbl}."
+        if _s_em else "Expected move unavailable for this expiration."
+    )
+
     with st.expander("What is Options Intelligence?", expanded=False):
         st.markdown(
-            """
+            f"""
 **Options Intelligence** uses the SPY options chain to reveal where large market participants
 are positioned, giving clues about likely price ranges and directional pressure.
 
@@ -367,18 +440,19 @@ call buying into a rally is often a contrarian warning sign.
 Compares the total volume or open interest of put contracts (bearish bets) vs call contracts
 (bullish bets). A ratio above 1.0 means more puts than calls — often a sign of fear or
 hedging. A low ratio signals complacency or bullish sentiment.
+> *Right now: {_pc_txt}*
 
 **Max Pain**
 The strike price at which the total dollar loss for all open option contracts is greatest —
 meaning dealers and market makers profit most if price expires there. Prices tend to
 *gravitate toward max pain* as expiration approaches, especially in the final days.
-> *Example: SPY is trading at $560 but max pain is $550. As Friday expiry nears,
-> selling pressure may push SPY closer to $550 — where the most option buyers lose.*
+> *Right now: {_mp_txt}*
 
 **Call Wall / Put Wall**
 The strikes with the highest call or put open interest act as magnetic price levels.
 A heavy **call wall** above price can cap upside (dealers sell as price rises there).
 A heavy **put wall** below can provide a floor (dealers buy as price falls there).
+> *Right now: {_walls_txt}*
 
 **OI Butterfly Chart**
 Shows call OI (green, right) and put OI (red, left) by strike for a chosen expiration.
@@ -394,44 +468,20 @@ which strikes are consistently defended across multiple expiration dates.
 The ATM straddle price (nearest call + nearest put) tells you what the options market implies
 as the ±price range by expiration. This is a 1-sigma move — roughly a 68% probability that
 SPY stays within that range.
-> *Example: ±$9.40 with SPY at $560 means options imply a range of $550.60 – $569.40 by expiry.*
+> *Right now: {_em_txt}*
 
 **Gamma Exposure (GEX)**
 Measures how aggressively dealers must hedge as SPY moves. When GEX is positive, dealers buy
 on dips and sell on rips — the market self-stabilises and stays range-bound. When GEX turns
 negative, dealer hedging amplifies moves — small drops can become sharp sell-offs.
 The GEX chart shows which individual strikes carry the most stabilising or amplifying force.
-> *Example: Large positive GEX at $555 means dealers will buy heavily if SPY falls to $555,
-> acting as a floor. Large negative GEX at $545 means a break below $545 may accelerate.*
+> *Right now: GEX is **{_gex_b}** ({_gex_sign}), meaning {_gex_behavior}.
+> Peak dealer support at **{_peak_sup}** · peak amplification risk at **{_peak_res}**.*
             """
         )
 
-    _scope_opts  = ["Daily", "7 Days", "14 Days", "21 Days", "Monthly"]
-    _scope_keys  = {
-        "Daily":   "daily",
-        "7 Days":  "7d",
-        "14 Days": "14d",
-        "21 Days": "21d",
-        "Monthly": "monthly",
-    }
-    _scope_notes = {
-        "Daily":   "Today's option volume · 4 nearest expirations · resets each trading day",
-        "7 Days":  "Open interest · expirations within 7 days",
-        "14 Days": "Open interest · expirations within 14 days",
-        "21 Days": "Open interest · expirations within 21 days",
-        "Monthly": "Open interest · expirations ≤ 30 days out",
-    }
-    # Seed call — nearest expiration + full list
-    seed = get_spy_options_analysis(expiration="", current_price=current_price)
-    if not seed:
-        st.caption("Options intelligence is currently disabled.")
-        return
-
-    exp_map = dict(zip(seed["exp_labels"], seed["expirations"]))
-
-    scope_col, exp_col, _ = st.columns([1, 1, 3])
-    with scope_col:
-        pc_scope = st.radio("P/C Scope", _scope_opts, horizontal=True, key="pc_scope", index=0)
+    # ── Selector: Expiration (P/C scope derived automatically from DTE) ──────
+    exp_col, _ = st.columns([2, 3])
     with exp_col:
         selected_label = st.selectbox(
             "Expiration",
@@ -441,7 +491,25 @@ The GEX chart shows which individual strikes carry the most stabilising or ampli
         )
 
     selected_iso = exp_map[selected_label]
-    pc = get_put_call_ratio(scope=_scope_keys[pc_scope])
+
+    # Derive P/C scope from DTE so the ratio window aligns with the selected chain
+    from datetime import date as _date, datetime as _datetime
+    try:
+        _dte = (_datetime.strptime(selected_iso, "%Y-%m-%d").date() - _date.today()).days
+    except Exception:
+        _dte = 0
+    if _dte <= 1:
+        _pc_scope_key, _pc_scope_note = "daily",   "Today's option volume · resets each trading day"
+    elif _dte <= 7:
+        _pc_scope_key, _pc_scope_note = "7d",      "Open interest · expirations within 7 days"
+    elif _dte <= 14:
+        _pc_scope_key, _pc_scope_note = "14d",     "Open interest · expirations within 14 days"
+    elif _dte <= 21:
+        _pc_scope_key, _pc_scope_note = "21d",     "Open interest · expirations within 21 days"
+    else:
+        _pc_scope_key, _pc_scope_note = "monthly", "Open interest · expirations ≤ 30 days out"
+
+    pc = get_put_call_ratio(scope=_pc_scope_key)
 
     data = get_spy_options_analysis(expiration=selected_iso, current_price=current_price)
     if not data:
@@ -490,12 +558,12 @@ The GEX chart shows which individual strikes carry the most stabilising or ampli
   <div style="font-size:12px;font-weight:700;color:{pc['color']};margin-bottom:6px">
     {pc['signal']}
   </div>
-  <div style="font-size:10px;color:#64748B;line-height:1.7">
+  <div style="font-size:10px;color:#94A3B8;line-height:1.7">
     {pc['puts']:,} puts &nbsp;·&nbsp; {pc['calls']:,} calls<br>
     {pc['exp_count']} exp &nbsp;·&nbsp; {exp_range}
   </div>
-  <div style="font-size:9px;color:#334155;margin-top:6px;line-height:1.5">
-    {_scope_notes[pc_scope]}
+  <div style="font-size:9px;color:#64748B;margin-top:6px;line-height:1.5">
+    {_pc_scope_note}
   </div>
 </div>""",
                 unsafe_allow_html=True,
@@ -517,14 +585,14 @@ The GEX chart shows which individual strikes carry the most stabilising or ampli
               text-transform:uppercase;margin-bottom:4px">Max Pain · {selected_label}</div>
   <div style="font-size:36px;font-weight:900;color:{mp_color};line-height:1;
               margin:4px 0">${max_pain:,.0f}</div>
-  <div style="font-size:11px;color:#64748B;margin-top:6px;line-height:1.6">
+  <div style="font-size:11px;color:#94A3B8;margin-top:6px;line-height:1.6">
     Current&nbsp;<b style="color:#F1F5F9">${current_price:,.2f}</b><br>
     {dist_arrow}&nbsp;<b style="color:{mp_color}">{abs(dist_pct):.1f}%</b> from max pain
   </div>
   <div style="font-size:10px;color:{mp_color};margin-top:8px;line-height:1.5">
     {mp_signal}
   </div>
-  <div style="font-size:9px;color:#334155;margin-top:8px;line-height:1.5">
+  <div style="font-size:9px;color:#64748B;margin-top:8px;line-height:1.5">
     Strike where all open contracts expire with maximum loss.
     Price tends to gravitate toward it into expiry.
   </div>
@@ -694,13 +762,13 @@ def _render_expected_move_card(em: dict | None, exp_label: str) -> None:
   <div style="font-size:32px;font-weight:900;color:#A78BFA;line-height:1;margin:4px 0">
     ±${em['move']:,.2f}
   </div>
-  <div style="font-size:12px;color:#64748B;margin-top:4px">±{em['pct']:.1f}% of spot</div>
-  <div style="font-size:11px;color:#475569;margin-top:10px;line-height:1.8">
+  <div style="font-size:12px;color:#94A3B8;margin-top:4px">±{em['pct']:.1f}% of spot</div>
+  <div style="font-size:11px;color:#94A3B8;margin-top:10px;line-height:1.8">
     Range: <b style="color:#F1F5F9">${em['low']:,.2f}</b> – <b style="color:#F1F5F9">${em['high']:,.2f}</b><br>
     ATM strike: <b style="color:#F1F5F9">${em['atm_strike']:,.0f}</b>
   </div>
-  <div style="font-size:9px;color:#334155;margin-top:8px;line-height:1.5">
-    ATM straddle price — 68% probability price stays within this range at expiry.
+  <div style="font-size:9px;color:#64748B;margin-top:8px;line-height:1.5">
+    {"ATM straddle price" if em.get("method") == "straddle" else "IV-based estimate (no live quotes)"} — 68% probability price stays within this range at expiry.
   </div>
 </div>""",
         unsafe_allow_html=True,
@@ -738,12 +806,12 @@ def _render_gex_summary_card(gex_df: "pd.DataFrame") -> None:
   <div style="font-size:12px;font-weight:700;color:{gex_color};margin-bottom:8px">
     {gex_signal}
   </div>
-  <div style="font-size:10px;color:#64748B;line-height:1.8">
+  <div style="font-size:10px;color:#94A3B8;line-height:1.8">
     {gex_note}<br>
     Peak dealer support: <b style="color:#22C55E">${peak_support:,.0f}</b><br>
     Peak dealer flip: <b style="color:#EF4444">${peak_resist:,.0f}</b>
   </div>
-  <div style="font-size:9px;color:#334155;margin-top:8px;line-height:1.5">
+  <div style="font-size:9px;color:#64748B;margin-top:8px;line-height:1.5">
     Positive = stabilising · Negative = moves may accelerate through key levels.
   </div>
 </div>""",
