@@ -62,7 +62,12 @@ def render_spy_dashboard_tab() -> None:
 
     st.divider()
 
-    # ── 5. Options Intelligence — Max Pain · OI · P/C (moved up) ─────────────
+    # ── 5a. 0DTE Conditions Meter ─────────────────────────────────────────────
+    _render_0dte_bias_panel(quote["price"], overview["vix"], _rsi, _pc)
+
+    st.divider()
+
+    # ── 5b. Options Intelligence — Max Pain · OI · P/C ───────────────────────
     _render_options_section(quote["price"])
 
     st.divider()
@@ -169,16 +174,44 @@ def _render_spy_chart_section(quote: dict) -> None:
         st.info("Chart data unavailable — the market may be closed or data is delayed.")
         return
 
-    prev = quote["prev_close"] if show_prev else None
+    prev_close_line = quote["prev_close"] if show_prev else None
 
-    # VWAP for Today intraday view only
-    vwap = None
+    # ── VWAP + bands (Today intraday only) ───────────────────────────────────
+    vwap = vwap_u1 = vwap_l1 = vwap_u2 = vwap_l2 = None
     if choice == "Today" and "Volume" in chart_df.columns and not chart_df["Volume"].isna().all():
-        tp   = (chart_df["High"] + chart_df["Low"] + chart_df["Close"]) / 3
+        tp     = (chart_df["High"] + chart_df["Low"] + chart_df["Close"]) / 3
         cumvol = chart_df["Volume"].cumsum()
         vwap   = (tp * chart_df["Volume"]).cumsum() / cumvol.replace(0, float("nan"))
+        # Volume-weighted std dev of typical price from VWAP
+        tp_dev_sq = ((tp - vwap) ** 2 * chart_df["Volume"]).cumsum()
+        vwap_std  = (tp_dev_sq / cumvol.replace(0, float("nan"))).pow(0.5)
+        vwap_u1, vwap_l1 = vwap + vwap_std,     vwap - vwap_std
+        vwap_u2, vwap_l2 = vwap + 2 * vwap_std, vwap - 2 * vwap_std
 
-    # Max pain + call/put walls for daily+ views (cached options fetch)
+    # ── PDH / PDL / Pivot / R1 / S1 (Today + 5D only) ────────────────────────
+    pdh = pdl = pivot = r1 = s1 = None
+    if choice in ("Today", "5D"):
+        try:
+            _daily_5d = get_spy_chart_df(period="5d", interval="1d")
+            if len(_daily_5d) >= 2:
+                _pd = _daily_5d.iloc[-2]
+                pdh   = float(_pd["High"])
+                pdl   = float(_pd["Low"])
+                _pdc  = float(_pd["Close"])
+                pivot = (pdh + pdl + _pdc) / 3
+                r1    = 2 * pivot - pdl
+                s1    = 2 * pivot - pdh
+        except Exception:
+            pass
+
+    # ── Opening Range high/low (Today only — first 6 bars = 9:30–10:00 AM) ───
+    or_high = or_low = None
+    if choice == "Today" and len(chart_df) >= 4:
+        _or = chart_df.head(6)
+        or_high = float(_or["High"].max())
+        or_low  = float(_or["Low"].min())
+
+    # ── Max pain + call/put walls (non-intraday views) ────────────────────────
     max_pain = call_wall = put_wall = None
     if not show_prev:
         try:
@@ -193,9 +226,14 @@ def _render_spy_chart_section(quote: dict) -> None:
             pass
 
     st.plotly_chart(
-        _spy_chart(chart_df, mas, prev, show_rsi=show_rsi,
+        _spy_chart(chart_df, mas, prev_close_line, show_rsi=show_rsi,
                    vwap=vwap, max_pain=max_pain,
-                   call_wall=call_wall, put_wall=put_wall),
+                   call_wall=call_wall, put_wall=put_wall,
+                   or_high=or_high, or_low=or_low,
+                   pdh=pdh, pdl=pdl,
+                   pivot=pivot, r1=r1, s1=s1,
+                   vwap_u1=vwap_u1, vwap_l1=vwap_l1,
+                   vwap_u2=vwap_u2, vwap_l2=vwap_l2),
         width="stretch",
     )
 
@@ -222,8 +260,19 @@ def _spy_chart(
     max_pain: float | None = None,
     call_wall: float | None = None,
     put_wall: float | None = None,
+    or_high: float | None = None,
+    or_low: float | None = None,
+    pdh: float | None = None,
+    pdl: float | None = None,
+    pivot: float | None = None,
+    r1: float | None = None,
+    s1: float | None = None,
+    vwap_u1: pd.Series | None = None,
+    vwap_l1: pd.Series | None = None,
+    vwap_u2: pd.Series | None = None,
+    vwap_l2: pd.Series | None = None,
 ) -> go.Figure:
-    """Candlestick + volume + optional RSI + VWAP + options levels."""
+    """Candlestick + volume + optional RSI + VWAP + options levels + OR/PDH/Pivot."""
     if show_rsi:
         rows, row_heights = 3, [0.55, 0.2, 0.25]
         vol_row, rsi_row  = 2, 3
@@ -251,12 +300,89 @@ def _spy_chart(
             ), row=1, col=1)
 
     if vwap is not None:
+        # VWAP ±2σ bands (outermost, faintest)
+        if vwap_u2 is not None:
+            fig.add_trace(go.Scatter(
+                x=df.index, y=vwap_u2, name="VWAP+2σ", mode="lines",
+                line=dict(color="#E879F9", width=0.8, dash="dot"), opacity=0.4,
+                hovertemplate="VWAP+2σ: <b>%{y:,.2f}</b><extra></extra>",
+            ), row=1, col=1)
+        if vwap_l2 is not None:
+            fig.add_trace(go.Scatter(
+                x=df.index, y=vwap_l2, name="VWAP-2σ", mode="lines",
+                line=dict(color="#E879F9", width=0.8, dash="dot"), opacity=0.4,
+                fill="tonexty", fillcolor="rgba(232,121,249,0.03)",
+                hovertemplate="VWAP-2σ: <b>%{y:,.2f}</b><extra></extra>",
+            ), row=1, col=1)
+        # VWAP ±1σ bands
+        if vwap_u1 is not None:
+            fig.add_trace(go.Scatter(
+                x=df.index, y=vwap_u1, name="VWAP+1σ", mode="lines",
+                line=dict(color="#E879F9", width=1, dash="dot"), opacity=0.6,
+                hovertemplate="VWAP+1σ: <b>%{y:,.2f}</b><extra></extra>",
+            ), row=1, col=1)
+        if vwap_l1 is not None:
+            fig.add_trace(go.Scatter(
+                x=df.index, y=vwap_l1, name="VWAP-1σ", mode="lines",
+                line=dict(color="#E879F9", width=1, dash="dot"), opacity=0.6,
+                fill="tonexty", fillcolor="rgba(232,121,249,0.05)",
+                hovertemplate="VWAP-1σ: <b>%{y:,.2f}</b><extra></extra>",
+            ), row=1, col=1)
+        # VWAP centre line
         fig.add_trace(go.Scatter(
             x=df.index, y=vwap,
             name="VWAP", mode="lines",
             line=dict(color="#E879F9", width=1.5, dash="dash"),
             hovertemplate="VWAP: <b>%{y:,.2f}</b><extra></extra>",
         ), row=1, col=1)
+
+    # ── Opening Range ─────────────────────────────────────────────────────────
+    if or_high is not None:
+        fig.add_hline(y=or_high, row=1, col=1,
+                      line_dash="solid", line_color="#FBBF24", line_width=1.2,
+                      annotation_text=f"OR H {or_high:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#FBBF24",
+                      annotation_position="top left")
+    if or_low is not None:
+        fig.add_hline(y=or_low, row=1, col=1,
+                      line_dash="solid", line_color="#FBBF24", line_width=1.2,
+                      annotation_text=f"OR L {or_low:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#FBBF24",
+                      annotation_position="bottom left")
+
+    # ── Previous Day High / Low ───────────────────────────────────────────────
+    if pdh is not None:
+        fig.add_hline(y=pdh, row=1, col=1,
+                      line_dash="dash", line_color="#94A3B8", line_width=1,
+                      annotation_text=f"PDH {pdh:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#94A3B8",
+                      annotation_position="top right")
+    if pdl is not None:
+        fig.add_hline(y=pdl, row=1, col=1,
+                      line_dash="dash", line_color="#94A3B8", line_width=1,
+                      annotation_text=f"PDL {pdl:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#94A3B8",
+                      annotation_position="bottom right")
+
+    # ── Daily Pivot + R1 / S1 ─────────────────────────────────────────────────
+    if pivot is not None:
+        fig.add_hline(y=pivot, row=1, col=1,
+                      line_dash="dot", line_color="#38BDF8", line_width=1,
+                      annotation_text=f"P {pivot:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#38BDF8",
+                      annotation_position="top left")
+    if r1 is not None:
+        fig.add_hline(y=r1, row=1, col=1,
+                      line_dash="dot", line_color="#86EFAC", line_width=1,
+                      annotation_text=f"R1 {r1:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#86EFAC",
+                      annotation_position="top left")
+    if s1 is not None:
+        fig.add_hline(y=s1, row=1, col=1,
+                      line_dash="dot", line_color="#FDA4AF", line_width=1,
+                      annotation_text=f"S1 {s1:,.2f}",
+                      annotation_font_size=9, annotation_font_color="#FDA4AF",
+                      annotation_position="bottom left")
 
     if prev_close is not None:
         fig.add_hline(y=prev_close, row=1, col=1,
@@ -323,6 +449,267 @@ def _spy_chart(
         hovermode="x unified",
     )
     return fig
+
+
+def _render_0dte_bias_panel(
+    current_price: float,
+    vix_snapshot: dict | None,
+    rsi: float | None,
+    pc_data: dict | None,
+) -> None:
+    """0DTE Conditions Meter — evaluates live signals against 0DTE guide thresholds."""
+    try:
+        seed      = get_spy_options_analysis(expiration="", current_price=current_price)
+        max_pain  = seed["max_pain"]               if seed else None
+        gex_df    = seed.get("gex_df", pd.DataFrame()) if seed else pd.DataFrame()
+        total_gex = gex_df["gex"].sum()            if not gex_df.empty else None
+    except Exception:
+        max_pain = total_gex = None
+
+    # ── Evaluate signals ────────────────────────────────────────────────────────
+    # Each tuple: (label, value_str, bias, tooltip, color)
+    signals: list[tuple] = []
+    call_pts = put_pts = 0
+
+    # 1. VIX — cheap options vs fear premium
+    vix_val = vix_snapshot.get("current") if vix_snapshot else None
+    if vix_val is not None:
+        if vix_val < 16:
+            signals.append(("VIX", f"{vix_val:.1f}", "CALL",    "Cheap options — good day to buy directional calls", "#22C55E")); call_pts += 1
+        elif vix_val > 25:
+            signals.append(("VIX", f"{vix_val:.1f}", "PUT",     "Fear elevated — sell spreads or fade bounces", "#EF4444")); put_pts += 1
+        else:
+            signals.append(("VIX", f"{vix_val:.1f}", "NEUTRAL", "Mid-range — no strong options-price edge", "#94A3B8"))
+    else:
+        signals.append(("VIX", "N/A", "—", "Unavailable", "#475569"))
+
+    # 2. P/C Ratio — positioning sentiment
+    if pc_data:
+        r = pc_data["ratio"]
+        if r < 0.80:
+            signals.append(("P/C Ratio", f"{r:.3f}", "CALL",    "More calls than puts — market leans bullish", "#22C55E")); call_pts += 1
+        elif r > 1.10:
+            signals.append(("P/C Ratio", f"{r:.3f}", "PUT",     "Fear/hedging dominant — put volume heavy", "#EF4444")); put_pts += 1
+        else:
+            signals.append(("P/C Ratio", f"{r:.3f}", "NEUTRAL", "Balanced put/call positioning", "#94A3B8"))
+    else:
+        signals.append(("P/C Ratio", "N/A", "—", "Unavailable", "#475569"))
+
+    # 3. Max Pain — gravitational pull into expiry
+    if max_pain:
+        dist = (current_price - max_pain) / max_pain * 100
+        if dist > 1.0:
+            signals.append(("Max Pain", f"${max_pain:,.0f}", "CALL",    f"Price {dist:+.1f}% above — bullish price action", "#22C55E")); call_pts += 1
+        elif dist < -1.0:
+            signals.append(("Max Pain", f"${max_pain:,.0f}", "PUT",     f"Price {dist:+.1f}% below — bearish gravitational pull", "#EF4444")); put_pts += 1
+        else:
+            signals.append(("Max Pain", f"${max_pain:,.0f}", "NEUTRAL", f"Pinned near pain ({dist:+.1f}%) — sideways expected", "#94A3B8"))
+    else:
+        signals.append(("Max Pain", "N/A", "—", "Unavailable", "#475569"))
+
+    # 4. GEX — dealer hedging amplifies or dampens moves
+    if total_gex is not None:
+        gb = total_gex / 1e9
+        if total_gex >= 0:
+            signals.append(("GEX", f"{gb:+.1f}B", "CALL",    "Dealers buy dips & sell rips — market pinned up", "#22C55E")); call_pts += 1
+        else:
+            signals.append(("GEX", f"{gb:+.1f}B", "PUT",     "Dealers amplify moves — drops can accelerate", "#EF4444")); put_pts += 1
+    else:
+        signals.append(("GEX", "N/A", "—", "Unavailable", "#475569"))
+
+    # 5. RSI (daily) — momentum confirmation
+    if rsi is not None:
+        if rsi >= 55:
+            signals.append(("RSI (1d)", f"{rsi:.1f}", "CALL",    "Above 55 — bullish daily momentum", "#22C55E")); call_pts += 1
+        elif rsi <= 45:
+            signals.append(("RSI (1d)", f"{rsi:.1f}", "PUT",     "Below 45 — bearish daily momentum", "#EF4444")); put_pts += 1
+        else:
+            signals.append(("RSI (1d)", f"{rsi:.1f}", "NEUTRAL", "45–55 choppy zone — no directional edge", "#94A3B8"))
+    else:
+        signals.append(("RSI (1d)", "N/A", "—", "Unavailable", "#475569"))
+
+    # ── Overall verdict ─────────────────────────────────────────────────────────
+    net    = call_pts - put_pts
+    scored = call_pts + put_pts
+
+    if net >= 3:
+        v_label, v_color, v_icon, v_note = "CALL BIAS",  "#22C55E", "▲", "Strong conditions for call buying or bull spreads"
+    elif net >= 1:
+        v_label, v_color, v_icon, v_note = "MILD CALL",  "#86EFAC", "↗", "Slight upside lean — size smaller, defined risk only"
+    elif net <= -3:
+        v_label, v_color, v_icon, v_note = "PUT BIAS",   "#EF4444", "▼", "Strong conditions for put buying or bear spreads"
+    elif net <= -1:
+        v_label, v_color, v_icon, v_note = "MILD PUT",   "#FCA5A5", "↘", "Slight downside lean — size smaller, defined risk only"
+    else:
+        v_label, v_color, v_icon, v_note = "NEUTRAL",    "#F59E0B", "↔", "No clear edge — consider iron condors or stay flat"
+
+    # ── Trade suggestion: target + stop + R/R + time window ───────────────────
+    trade_html = ""
+    if net != 0 and seed:
+        oi_df_s = seed.get("oi_df", pd.DataFrame())
+        em_s    = seed.get("expected_move")
+        em_move = em_s["move"] if em_s else 3.0
+
+        call_wall_s = (
+            float(oi_df_s.loc[oi_df_s["call_oi"].idxmax(), "strike"])
+            if not oi_df_s.empty else None
+        )
+        put_wall_s = (
+            float(oi_df_s.loc[oi_df_s["put_oi"].idxmax(), "strike"])
+            if not oi_df_s.empty else None
+        )
+
+        atm_strike = round(current_price)
+
+        if net > 0:  # ── CALL trade ──────────────────────────────────────────
+            # Target: call wall → max pain → 60% of EM
+            tgt_cands: list[tuple[str, float]] = []
+            if call_wall_s and current_price + 0.5 < call_wall_s <= current_price + em_move * 1.3:
+                tgt_cands.append(("call wall", call_wall_s))
+            if max_pain and current_price + 0.5 < max_pain <= current_price + em_move * 1.3:
+                tgt_cands.append(("max pain", max_pain))
+            tgt_cands.append(("exp. move ×0.6", current_price + em_move * 0.6))
+            tgt_label, tgt_price = tgt_cands[0]
+            tgt_price = round(tgt_price)
+
+            # Stop: put wall (if nearby + gives ≥1:1 R/R) → else 1:2 R/R default
+            reward = tgt_price - current_price
+            stp_cands: list[tuple[str, float]] = []
+            if put_wall_s and current_price - em_move < put_wall_s < current_price - 0.5:
+                if (current_price - put_wall_s) <= reward * 1.5:
+                    stp_cands.append(("put wall", put_wall_s))
+            stp_cands.append(("1:2 R/R", current_price - reward / 2))
+            stp_label, stp_price = stp_cands[0]
+            stp_price = round(stp_price)
+
+            risk = max(current_price - stp_price, 0.5)
+            rr   = reward / risk
+            clr  = "#22C55E"
+            bg   = "rgba(34,197,94,0.12)"
+            stp_clr = "#F59E0B"
+
+        else:  # ── PUT trade ───────────────────────────────────────────────────
+            # Target: put wall → max pain → 60% of EM
+            tgt_cands = []
+            if put_wall_s and current_price - em_move * 1.3 <= put_wall_s < current_price - 0.5:
+                tgt_cands.append(("put wall", put_wall_s))
+            if max_pain and current_price - em_move * 1.3 <= max_pain < current_price - 0.5:
+                tgt_cands.append(("max pain", max_pain))
+            tgt_cands.append(("exp. move ×0.6", current_price - em_move * 0.6))
+            tgt_label, tgt_price = tgt_cands[0]
+            tgt_price = round(tgt_price)
+
+            # Stop: call wall (if nearby + gives ≥1:1 R/R) → else 1:2 R/R default
+            reward = current_price - tgt_price
+            stp_cands = []
+            if call_wall_s and current_price + 0.5 < call_wall_s < current_price + em_move:
+                if (call_wall_s - current_price) <= reward * 1.5:
+                    stp_cands.append(("call wall", call_wall_s))
+            stp_cands.append(("1:2 R/R", current_price + reward / 2))
+            stp_label, stp_price = stp_cands[0]
+            stp_price = round(stp_price)
+
+            risk = max(stp_price - current_price, 0.5)
+            rr   = reward / risk
+            clr  = "#EF4444"
+            bg   = "rgba(239,68,68,0.12)"
+            stp_clr = "#F59E0B"
+
+        direction = "call" if net > 0 else "put"
+        rr_clr = "#22C55E" if rr >= 2.0 else "#F59E0B" if rr >= 1.2 else "#EF4444"
+
+        trade_html = (
+            f'<div style="font-size:9px;color:#64748B;font-weight:700;letter-spacing:.06em;'
+            f'text-transform:uppercase;margin-bottom:8px">Suggested Trade</div>'
+            f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px">'
+            f'<div>'
+            f'<div style="font-size:8px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">Entry</div>'
+            f'<div style="font-size:15px;font-weight:800;color:{clr}">${atm_strike:,} {direction}</div>'
+            f'</div>'
+            f'<div>'
+            f'<div style="font-size:8px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">Stop</div>'
+            f'<div style="font-size:15px;font-weight:800;color:{stp_clr}">${stp_price:,}</div>'
+            f'</div>'
+            f'<div>'
+            f'<div style="font-size:8px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">Target</div>'
+            f'<div style="font-size:15px;font-weight:800;color:{clr}">${tgt_price:,}</div>'
+            f'</div>'
+            f'<div>'
+            f'<div style="font-size:8px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">R / R</div>'
+            f'<div style="font-size:15px;font-weight:800;color:{rr_clr}">1 : {rr:.1f}</div>'
+            f'</div>'
+            f'</div>'
+            f'<div style="font-size:8px;color:#475569;margin-top:6px;line-height:1.5">'
+            f'Target: {tgt_label} &nbsp;·&nbsp; Stop: {stp_label}'
+            f'</div>'
+            f'<div style="font-size:8px;color:#475569;margin-top:6px;padding-top:6px;'
+            f'border-top:1px solid #1E293B;line-height:1.5">'
+            f'&#9200; Enter 9:45–11:30 AM &nbsp;·&nbsp; Exit by 3:00 PM'
+            f'</div>'
+        )
+
+    # ── Compact signal badge row (replaces full-width chips) ───────────────────
+    _BIAS_ICON = {"CALL": "▲", "PUT": "▼", "NEUTRAL": "→"}
+    _BIAS_BG   = {
+        "CALL":    "rgba(34,197,94,0.15)",
+        "PUT":     "rgba(239,68,68,0.15)",
+        "NEUTRAL": "rgba(148,163,184,0.08)",
+    }
+
+    def _badge(label: str, value: str, bias: str, clr: str) -> str:
+        bg   = _BIAS_BG.get(bias, "rgba(71,85,105,0.08)")
+        icon = _BIAS_ICON.get(bias, "·")
+        txt  = clr if bias in ("CALL", "PUT") else "#64748B"
+        return (
+            f'<span style="display:inline-flex;align-items:center;gap:3px;background:{bg};'
+            f'border:1px solid rgba(255,255,255,0.05);border-radius:20px;'
+            f'padding:3px 9px;font-size:9px;font-weight:600;color:{txt};white-space:nowrap">'
+            f'{label}&nbsp;{value}&nbsp;{icon}'
+            f'</span>'
+        )
+
+    badges_html = " ".join(_badge(s[0], s[1], s[2], s[4]) for s in signals)
+    neutral_ct  = 5 - scored
+
+    # Trade plan panel (right side) or neutral message
+    if trade_html:
+        right_panel = trade_html
+    else:
+        right_panel = (
+            '<div style="font-size:11px;color:#F59E0B;font-weight:600;margin-bottom:6px">'
+            'No directional edge today</div>'
+            '<div style="font-size:9px;color:#64748B;line-height:1.6">'
+            'Consider: iron condor or iron fly<br>'
+            'Sell premium, let theta work for you<br>'
+            '<span style="margin-top:5px;display:block">&#9200; Avoid new positions after 2:00 PM</span>'
+            '</div>'
+        )
+
+    st.html(
+        f'<div style="margin-bottom:8px">'
+        f'<span style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.08em;'
+        f'text-transform:uppercase">0DTE Conditions Meter</span>'
+        f'<span style="font-size:9px;color:#475569;margin-left:10px">'
+        f'Based on 0DTE guide thresholds · not financial advice'
+        f'</span>'
+        f'</div>'
+        f'<div style="background:rgba(255,255,255,0.03);border:1px solid #1E293B;'
+        f'border-radius:12px;padding:18px 20px">'
+        f'<div style="display:flex;align-items:flex-start;gap:20px">'
+        f'<div style="min-width:220px;flex-shrink:0">'
+        f'<div style="font-size:32px;font-weight:900;color:{v_color};line-height:1;'
+        f'letter-spacing:-.5px">{v_icon} {v_label}</div>'
+        f'<div style="font-size:11px;color:{v_color};font-weight:600;margin-top:5px">'
+        f'{call_pts} call &nbsp;·&nbsp; {put_pts} put &nbsp;·&nbsp; {neutral_ct} neutral'
+        f'</div>'
+        f'<div style="font-size:9px;color:#64748B;margin-top:5px;line-height:1.4">{v_note}</div>'
+        f'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:12px">{badges_html}</div>'
+        f'</div>'
+        f'<div style="width:1px;background:#1E293B;align-self:stretch;flex-shrink:0"></div>'
+        f'<div style="width:230px;flex-shrink:0">{right_panel}</div>'
+        f'</div>'
+        f'</div>'
+    )
 
 
 def _render_options_section(current_price: float) -> None:
