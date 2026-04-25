@@ -4,7 +4,7 @@
 # ── S&P 500 screener universe ──────────────────────────────────────────────────
 # Ordered by approximate S&P 500 market-cap weight.
 screener:
-  default_count: 200
+  default_count: 300
   universe:
     - AAPL
     - MSFT
@@ -207,6 +207,118 @@ screener:
     - PINS
     - F
     - GM
+    # ── next 100 (market-cap coverage expansion to ~300) ──────────────────────
+    # Technology / Software / Fintech
+    - ADBE
+    - APP
+    - PLTR
+    - CRWD
+    - ANET
+    - DDOG
+    - WDAY
+    - FTNT
+    - ZS
+    - COIN
+    - PYPL
+    - ABNB
+    - TEAM
+    - TTD
+    - OKTA
+    - TMUS
+    - NDAQ
+    - FISV
+    - SMCI
+    - NTAP
+    - PSTG
+    # Healthcare
+    - DHR
+    - BDX
+    - HUM
+    - RMD
+    - DXCM
+    - BIIB
+    - IDXX
+    - GEHC
+    - MTD
+    - HOLX
+    # Financials
+    - AMP
+    - TROW
+    - SYF
+    - CBOE
+    - MTB
+    - CFG
+    - HBAN
+    - BR
+    - FIS
+    - GPN
+    # Consumer Discretionary
+    - CMG
+    - ULTA
+    - YUM
+    - DECK
+    - WSM
+    - EXPE
+    - MGM
+    - LVS
+    - RL
+    - BBWI
+    # Consumer Staples
+    - STZ
+    - EL
+    - CHD
+    - CAG
+    - HRL
+    # Industrials
+    - TT
+    - CARR
+    - OTIS
+    - ROK
+    - IR
+    - WM
+    - RSG
+    - PWR
+    - XYL
+    - HUBB
+    # Materials
+    - SHW
+    - FCX
+    - NEM
+    - NUE
+    - STLD
+    - CF
+    - MOS
+    - PKG
+    # Energy (midstream + services)
+    - BKR
+    - OKE
+    - KMI
+    - WMB
+    - LNG
+    - APA
+    # Utilities
+    - EIX
+    - FE
+    - NRG
+    - AEE
+    - ETR
+    # Real Estate
+    - VTR
+    - KIM
+    - ARE
+    - CBRE
+    - NNN
+    # Media / Entertainment / Other
+    - WBD
+    - MRNA
+    - ENPH
+    - FSLR
+    - CEG
+    - VST
+    - DKNG
+    - RBLX
+    - LYFT
+    - TDG
 
 # ── NASDAQ-100 ticker universe ─────────────────────────────────────────────────
 nasdaq_100:

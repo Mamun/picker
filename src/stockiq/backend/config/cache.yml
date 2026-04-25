@@ -21,6 +21,7 @@ screeners:
   fetch_spx_munger_scan: 43200            # Munger quality — 12 h (fundamentals are quarterly)
   fetch_spx_strong_buy_scan: 21600        # Analyst consensus buy — 6 h (ratings change weekly)
   fetch_spx_strong_sell_scan: 21600       # Analyst consensus sell — 6 h
+  fetch_spx_forward_pe_scan: 21600        # Forward P/E value growth — 6 h (fundamentals change slowly)
   fetch_nasdaq_rsi_scan: 1800             # NASDAQ-100 RSI — 30 min
   fetch_nasdaq_premarket_scan: 300        # Premarket movers — 5 min (prices change rapidly)
   fetch_nasdaq_premarket_history: 3600    # 7-day daily close history — hourly

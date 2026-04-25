@@ -14,6 +14,7 @@ from stockiq.backend.data.cache.screener_metadata import get_metadata
 from stockiq.backend.data.cache.screener_short_interest import get_short_interest
 from stockiq.backend.data.cache.screener_fundamentals import get_fundamentals
 from stockiq.backend.data.cache.screener_analyst import get_analyst_consensus
+from stockiq.backend.data.cache.screener_forward_pe import get_forward_pe
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
@@ -141,6 +142,6 @@ ETF_UNIVERSE: list[dict] = [
 __all__ = [
     "ttl_cache", "CACHE_TTL", "SPX_TICKERS", "NASDAQ_100_TICKERS",
     "compute_rsi", "np", "pd", "yf", "datetime", "timedelta",
-    "get_metadata", "get_short_interest", "get_fundamentals", "get_analyst_consensus",
+    "get_metadata", "get_short_interest", "get_fundamentals", "get_analyst_consensus", "get_forward_pe",
     "_batch_download", "_rsi_last", "_NASDAQ_COMPANY_NAMES", "ETF_UNIVERSE",
 ]
