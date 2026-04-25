@@ -154,6 +154,7 @@ pages = {
         st.Page("src/stockiq/frontend/views/squeeze_scanner.py",         title="Short Squeeze Scanner", icon="🔥", url_path="squeeze"),
         st.Page("src/stockiq/frontend/views/strong_buy_scanner.py",      title="Analyst Buy Picks",     icon="💎", url_path="strong-buy"),
         st.Page("src/stockiq/frontend/views/strong_sell_scanner.py",     title="Analyst Sell Picks",    icon="🔻", url_path="strong-sell"),
+        st.Page("src/stockiq/frontend/views/forward_pe_scanner.py",      title="Forward P/E Picks",     icon="📈", url_path="forward-pe"),
         st.Page("src/stockiq/frontend/views/munger_strategy_scanner.py", title="Munger Value Picks",    icon="🎩", url_path="munger"),
         st.Page("src/stockiq/frontend/views/etf_scanner.py",             title="ETF Scanner",           icon="🌐", url_path="etf-scanner"),
     ],

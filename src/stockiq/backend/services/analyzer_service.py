@@ -80,3 +80,83 @@ def get_buying_pressure(df: pd.DataFrame, timeframe: str = "monthly") -> dict:
 def get_company_display_name(ticker: str) -> str:
     """Fetch long company name; falls back to ticker on error."""
     return get_company_name(ticker)
+
+
+def get_ticker_fundamentals(ticker: str) -> dict:
+    """
+    Return valuation + analyst data for a single ticker.
+
+    Strategy:
+      • SPX tickers (in local cache): served instantly from JSON files.
+        Market cap fetched via fast_info (lightweight).
+      • All other tickers: one yfinance .info call.
+      • Sector median forward P/E computed from the full cache for context.
+    """
+    import statistics
+    import yfinance as yf
+
+    from stockiq.backend.data.cache.screener_analyst import get_analyst_consensus
+    from stockiq.backend.data.cache.screener_forward_pe import get_forward_pe
+    from stockiq.backend.data.cache.screener_metadata import get_metadata
+
+    fpe_cache     = get_forward_pe()
+    analyst_cache = get_analyst_consensus()
+    meta_cache    = get_metadata()
+
+    in_cache = ticker in fpe_cache and ticker in analyst_cache
+
+    # Sector median P/E from the full 300-ticker cache (context line in card)
+    meta   = meta_cache.get(ticker, {})
+    sector = meta.get("sector") if meta else None
+    sector_median_pe: float | None = None
+    if sector and fpe_cache:
+        peers = [
+            v["forwardPE"] for t, v in fpe_cache.items()
+            if meta_cache.get(t, {}).get("sector") == sector
+            and v.get("forwardPE") and v["forwardPE"] > 0
+        ]
+        if peers:
+            sector_median_pe = round(statistics.median(peers), 1)
+
+    if in_cache:
+        fpe = fpe_cache[ticker]
+        anl = analyst_cache[ticker]
+        market_cap = None
+        try:
+            market_cap = yf.Ticker(ticker).fast_info.market_cap
+        except Exception:
+            pass
+        return {
+            "sector":           sector,
+            "sector_median_pe": sector_median_pe,
+            "market_cap":       market_cap,
+            "forward_pe":       fpe.get("forwardPE"),
+            "trailing_pe":      fpe.get("trailingPE"),
+            "eps_growth":       fpe.get("earningsGrowth"),
+            "peg":              fpe.get("pegRatio"),
+            "rating":           anl.get("recommendationMean"),
+            "num_analysts":     anl.get("numberOfAnalystOpinions"),
+            "target_mean":      anl.get("targetMeanPrice"),
+            "target_high":      anl.get("targetHighPrice"),
+            "target_low":       anl.get("targetLowPrice"),
+        }
+
+    # Fallback: full .info for non-SPX tickers
+    try:
+        info = yf.Ticker(ticker).info
+        return {
+            "sector":           info.get("sector", sector),
+            "sector_median_pe": sector_median_pe,
+            "market_cap":       info.get("marketCap"),
+            "forward_pe":       info.get("forwardPE"),
+            "trailing_pe":      info.get("trailingPE"),
+            "eps_growth":       info.get("earningsGrowth"),
+            "peg":              info.get("pegRatio"),
+            "rating":           info.get("recommendationMean"),
+            "num_analysts":     info.get("numberOfAnalystOpinions"),
+            "target_mean":      info.get("targetMeanPrice"),
+            "target_high":      info.get("targetHighPrice"),
+            "target_low":       info.get("targetLowPrice"),
+        }
+    except Exception:
+        return {}

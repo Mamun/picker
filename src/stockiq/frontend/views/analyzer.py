@@ -9,6 +9,7 @@ from stockiq.backend.services.analyzer_service import (
     get_stock_fibonacci,
     get_stock_gaps,
     get_stock_signal,
+    get_ticker_fundamentals,
     search_stocks,
 )
 from stockiq.frontend.views.components.charts import build_chart
@@ -82,6 +83,127 @@ def _render_bx_panel(bx: dict, label: str) -> None:
         st.markdown(f"&nbsp;&nbsp;✅ {cond}")
     for cond in bx["conditions_missing"]:
         st.markdown(f"&nbsp;&nbsp;❌ {cond}")
+
+
+def _fmt_mcap(v: float | None) -> tuple[str, str]:
+    """Return (formatted value, size label) for a market cap number."""
+    if v is None:
+        return "—", ""
+    if v >= 1e12:
+        return f"${v/1e12:.2f}T", "Mega Cap"
+    if v >= 2e11:
+        return f"${v/1e9:.0f}B", "Large Cap"
+    if v >= 1e10:
+        return f"${v/1e9:.1f}B", "Mid Cap"
+    return f"${v/1e9:.1f}B", "Small Cap"
+
+
+def _consensus_label(rating: float | None) -> tuple[str, str]:
+    """Return (label, color) for a yfinance recommendationMean value."""
+    if rating is None:
+        return "—", _MUT
+    if rating <= 1.5:
+        return "Strong Buy", _UP
+    if rating <= 2.0:
+        return "Buy", _UP
+    if rating <= 2.5:
+        return "Mod. Buy", "#86EFAC"
+    if rating <= 3.5:
+        return "Hold", _NEU
+    if rating <= 4.0:
+        return "Mod. Sell", _DN
+    return "Sell", _DN
+
+
+def _render_fundamentals_panel(fund: dict, price: float) -> None:
+    """Render the Fundamentals & Analyst two-row panel."""
+    if not fund:
+        return
+
+    # ── Row 1: Valuation ─────────────────────────────────────────────────────
+    st.markdown(
+        '<div style="font-size:0.78rem;color:#64748B;text-transform:uppercase;'
+        'letter-spacing:.08em;margin-bottom:8px">Fundamentals</div>',
+        unsafe_allow_html=True,
+    )
+
+    v1, v2, v3, v4, v5 = st.columns(5)
+
+    mcap_val, mcap_lbl = _fmt_mcap(fund.get("market_cap"))
+    v1.markdown(_stat_card("Market Cap", mcap_val, mcap_lbl), unsafe_allow_html=True)
+
+    fpe = fund.get("forward_pe")
+    med = fund.get("sector_median_pe")
+    if fpe:
+        sub = f"Sector avg {med}" if med else ""
+        pe_clr = _UP if (med and fpe < med) else _DN if (med and fpe > med * 1.15) else None
+        v2.markdown(_stat_card("Forward P/E", f"{fpe:.1f}", sub, pe_clr), unsafe_allow_html=True)
+    else:
+        v2.markdown(_stat_card("Forward P/E", "—", ""), unsafe_allow_html=True)
+
+    tpe = fund.get("trailing_pe")
+    v3.markdown(
+        _stat_card("Trailing P/E", f"{tpe:.1f}" if tpe and tpe > 0 else "—"),
+        unsafe_allow_html=True,
+    )
+
+    eg = fund.get("eps_growth")
+    if eg is not None:
+        eg_pct = eg * 100
+        eg_clr = _UP if eg_pct >= 10 else _DN if eg_pct < 0 else _NEU
+        v4.markdown(_stat_card("EPS Growth", f"{eg_pct:+.1f}%", "YoY est.", eg_clr), unsafe_allow_html=True)
+    else:
+        v4.markdown(_stat_card("EPS Growth", "—", "YoY est."), unsafe_allow_html=True)
+
+    peg = fund.get("peg")
+    if peg and peg > 0:
+        peg_clr = _UP if peg < 1 else _NEU if peg < 2 else _DN
+        peg_sub = "Undervalued" if peg < 1 else "Fair" if peg < 2 else "Expensive"
+        v5.markdown(_stat_card("PEG Ratio", f"{peg:.2f}", peg_sub, peg_clr), unsafe_allow_html=True)
+    else:
+        v5.markdown(_stat_card("PEG Ratio", "—"), unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:10px'></div>", unsafe_allow_html=True)
+
+    # ── Row 2: Analyst ───────────────────────────────────────────────────────
+    st.markdown(
+        '<div style="font-size:0.78rem;color:#64748B;text-transform:uppercase;'
+        'letter-spacing:.08em;margin-bottom:8px">Analyst Consensus</div>',
+        unsafe_allow_html=True,
+    )
+
+    a1, a2, a3, a4, a5 = st.columns(5)
+
+    cons_lbl, cons_clr = _consensus_label(fund.get("rating"))
+    rating = fund.get("rating")
+    rating_sub = f"{rating:.1f} / 5.0" if rating else ""
+    a1.markdown(_stat_card("Consensus", cons_lbl, rating_sub, cons_clr), unsafe_allow_html=True)
+
+    n_analysts = fund.get("num_analysts")
+    a2.markdown(
+        _stat_card("# Analysts", str(n_analysts) if n_analysts else "—", "covering"),
+        unsafe_allow_html=True,
+    )
+
+    target = fund.get("target_mean")
+    if target and price:
+        a3.markdown(_stat_card("Price Target", f"${target:,.2f}", "mean"), unsafe_allow_html=True)
+        upside = (target - price) / price * 100
+        up_clr = _UP if upside >= 10 else _DN if upside < 0 else _NEU
+        a4.markdown(_stat_card("Upside", f"{upside:+.1f}%", "to mean target", up_clr), unsafe_allow_html=True)
+    else:
+        a3.markdown(_stat_card("Price Target", "—", "mean"), unsafe_allow_html=True)
+        a4.markdown(_stat_card("Upside", "—"), unsafe_allow_html=True)
+
+    lo = fund.get("target_low")
+    hi = fund.get("target_high")
+    if lo and hi:
+        a5.markdown(
+            _stat_card("Target Range", f"${lo:,.0f} – ${hi:,.0f}", "low / high"),
+            unsafe_allow_html=True,
+        )
+    else:
+        a5.markdown(_stat_card("Target Range", "—"), unsafe_allow_html=True)
 
 
 def render_analyzer_tab() -> None:
@@ -160,9 +282,10 @@ def render_analyzer_tab() -> None:
             st.error(f"**{ticker}** returned insufficient price data.")
             return
 
-        st.session_state.analyzer_df      = raw
-        st.session_state.analyzer_ticker  = ticker
-        st.session_state.analyzer_company = get_company_display_name(ticker)
+        st.session_state.analyzer_df           = raw
+        st.session_state.analyzer_ticker       = ticker
+        st.session_state.analyzer_company      = get_company_display_name(ticker)
+        st.session_state.analyzer_fundamentals = get_ticker_fundamentals(ticker)
         st.query_params["tic"] = ticker
 
     df           = st.session_state.analyzer_df
@@ -282,7 +405,14 @@ def render_analyzer_tab() -> None:
     st.markdown("---")
 
     # ═════════════════════════════════════════════════════════════════════════
-    # SECTION 3 — Chart
+    # SECTION 3 — Fundamentals & Analyst Panel
+    # ═════════════════════════════════════════════════════════════════════════
+    _render_fundamentals_panel(st.session_state.analyzer_fundamentals, price)
+
+    st.markdown("---")
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # SECTION 4 — Chart
     # ═════════════════════════════════════════════════════════════════════════
     valid_period = url_period if url_period in _PERIODS else _DEFAULT_PERIOD
 
@@ -317,7 +447,7 @@ def render_analyzer_tab() -> None:
     st.markdown("---")
 
     # ═════════════════════════════════════════════════════════════════════════
-    # SECTION 4 — Signal analysis (left) + BX signal (right)
+    # SECTION 5 — Signal analysis (left) + BX signal (right)
     # ═════════════════════════════════════════════════════════════════════════
     sig_col, bx_col = st.columns([3, 2])
 
@@ -422,5 +552,7 @@ if "analyzer_ticker" not in st.session_state:
     st.session_state.analyzer_ticker = None
 if "analyzer_company" not in st.session_state:
     st.session_state.analyzer_company = None
+if "analyzer_fundamentals" not in st.session_state:
+    st.session_state.analyzer_fundamentals = {}
 
 render_analyzer_tab()

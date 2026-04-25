@@ -18,6 +18,7 @@ from .etf import get_etf_scan
 from .nasdaq import get_nasdaq_rsi_scan, get_premarket_scan
 from .spx import (
     get_bounce_radar_scan,
+    get_forward_pe_scan,
     get_munger_strategy_scan,
     get_candle_momentum_scan,
     get_squeeze_scan,
@@ -34,6 +35,7 @@ def get_screener_info() -> dict:
 __all__ = [
     # SPX
     "get_candle_momentum_scan",
+    "get_forward_pe_scan",
     "get_bounce_radar_scan",
     "get_squeeze_scan",
     "get_munger_strategy_scan",

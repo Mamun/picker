@@ -5,6 +5,7 @@ import pandas as pd
 from stockiq.backend.data.screeners import (
     fetch_spx_bounce_radar_scan,
     fetch_spx_candle_momentum_scan,
+    fetch_spx_forward_pe_scan,
     fetch_spx_munger_scan,
     fetch_spx_squeeze_scan,
     fetch_spx_strong_buy_scan,
@@ -48,6 +49,18 @@ def get_strong_buy_scan(
 ) -> pd.DataFrame:
     """Analyst buy consensus candidates, sorted by SB score."""
     return fetch_spx_strong_buy_scan(min_upside, min_analysts, max_rating, top_n)
+
+
+def get_forward_pe_scan(top_n: int = 30, max_fwd_pe: float = 25.0, min_eps_growth: float = 0.0) -> pd.DataFrame:
+    """Forward P/E value-growth candidates, sorted by VG Score."""
+    df = fetch_spx_forward_pe_scan()
+    if df.empty:
+        return df
+    if max_fwd_pe > 0:
+        df = df[df["Fwd P/E"] <= max_fwd_pe]
+    if min_eps_growth > 0:
+        df = df[df["EPS Gr %"].fillna(-999) >= min_eps_growth]
+    return df.head(top_n).reset_index(drop=True)
 
 
 def get_strong_sell_scan(
