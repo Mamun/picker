@@ -1,0 +1,1802 @@
+{
+  "AAPL": {
+    "shortPercentOfFloat": 0.0092,
+    "shortRatio": 3.24,
+    "sharesShort": 134422787,
+    "sharesShortPriorMonth": 124192030
+  },
+  "MSFT": {
+    "shortPercentOfFloat": 0.0112,
+    "shortRatio": 2.53,
+    "sharesShort": 83407242,
+    "sharesShortPriorMonth": 79835909
+  },
+  "NVDA": {
+    "shortPercentOfFloat": 0.012200001,
+    "shortRatio": 1.68,
+    "sharesShort": 283335701,
+    "sharesShortPriorMonth": 229241850
+  },
+  "AMZN": {
+    "shortPercentOfFloat": 0.0095,
+    "shortRatio": 2.02,
+    "sharesShort": 93006528,
+    "sharesShortPriorMonth": 84784941
+  },
+  "GOOGL": {
+    "shortPercentOfFloat": 0.0134000005,
+    "shortRatio": 2.72,
+    "sharesShort": 78071445,
+    "sharesShortPriorMonth": 80006593
+  },
+  "META": {
+    "shortPercentOfFloat": 0.0121,
+    "shortRatio": 1.48,
+    "sharesShort": 26466970,
+    "sharesShortPriorMonth": 24310664
+  },
+  "BRK-B": {
+    "shortPercentOfFloat": 0.0097,
+    "shortRatio": 2.33,
+    "sharesShort": 11923610,
+    "sharesShortPriorMonth": 11722714
+  },
+  "LLY": {
+    "shortPercentOfFloat": 0.010199999,
+    "shortRatio": 2.7,
+    "sharesShort": 8114678,
+    "sharesShortPriorMonth": 6873427
+  },
+  "AVGO": {
+    "shortPercentOfFloat": 0.0117999995,
+    "shortRatio": 2.11,
+    "sharesShort": 54628705,
+    "sharesShortPriorMonth": 52541817
+  },
+  "TSLA": {
+    "shortPercentOfFloat": 0.021300001,
+    "shortRatio": 1.07,
+    "sharesShort": 71106902,
+    "sharesShortPriorMonth": 60860404
+  },
+  "JPM": {
+    "shortPercentOfFloat": 0.0101,
+    "shortRatio": 2.66,
+    "sharesShort": 27013153,
+    "sharesShortPriorMonth": 23969779
+  },
+  "V": {
+    "shortPercentOfFloat": 0.0139,
+    "shortRatio": 3.34,
+    "sharesShort": 23418610,
+    "sharesShortPriorMonth": 26634362
+  },
+  "UNH": {
+    "shortPercentOfFloat": 0.0186,
+    "shortRatio": 1.68,
+    "sharesShort": 15177651,
+    "sharesShortPriorMonth": 17838552
+  },
+  "XOM": {
+    "shortPercentOfFloat": 0.0116,
+    "shortRatio": 1.69,
+    "sharesShort": 42991642,
+    "sharesShortPriorMonth": 48537195
+  },
+  "MA": {
+    "shortPercentOfFloat": 0.0073,
+    "shortRatio": 1.9,
+    "sharesShort": 6487956,
+    "sharesShortPriorMonth": 6304204
+  },
+  "HD": {
+    "shortPercentOfFloat": 0.0136,
+    "shortRatio": 2.95,
+    "sharesShort": 12142932,
+    "sharesShortPriorMonth": 10293338
+  },
+  "PG": {
+    "shortPercentOfFloat": 0.0117999995,
+    "shortRatio": 2.54,
+    "sharesShort": 27521432,
+    "sharesShortPriorMonth": 22994288
+  },
+  "JNJ": {
+    "shortPercentOfFloat": 0.0091,
+    "shortRatio": 2.59,
+    "sharesShort": 19671868,
+    "sharesShortPriorMonth": 23327094
+  },
+  "ABBV": {
+    "shortPercentOfFloat": 0.0137,
+    "shortRatio": 3.06,
+    "sharesShort": 21845453,
+    "sharesShortPriorMonth": 25110220
+  },
+  "WMT": {
+    "shortPercentOfFloat": 0.0156,
+    "shortRatio": 3.66,
+    "sharesShort": 69380758,
+    "sharesShortPriorMonth": 75577034
+  },
+  "COST": {
+    "shortPercentOfFloat": 0.0148,
+    "shortRatio": 3.71,
+    "sharesShort": 6550081,
+    "sharesShortPriorMonth": 6295610
+  },
+  "MRK": {
+    "shortPercentOfFloat": 0.0111,
+    "shortRatio": 2.82,
+    "sharesShort": 27495690,
+    "sharesShortPriorMonth": 29144880
+  },
+  "ORCL": {
+    "shortPercentOfFloat": 0.0171,
+    "shortRatio": 1.14,
+    "sharesShort": 29340158,
+    "sharesShortPriorMonth": 30553140
+  },
+  "CRM": {
+    "shortPercentOfFloat": 0.1047,
+    "shortRatio": 5.52,
+    "sharesShort": 74077294,
+    "sharesShortPriorMonth": 22873808
+  },
+  "BAC": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 2244,
+    "sharesShortPriorMonth": 3039
+  },
+  "AMD": {
+    "shortPercentOfFloat": 0.022,
+    "shortRatio": 1.08,
+    "sharesShort": 35648460,
+    "sharesShortPriorMonth": 32346203
+  },
+  "KO": {
+    "shortPercentOfFloat": 0.0095999995,
+    "shortRatio": 2.76,
+    "sharesShort": 41151710,
+    "sharesShortPriorMonth": 53713859
+  },
+  "CVX": {
+    "shortPercentOfFloat": 0.0101,
+    "shortRatio": 1.4,
+    "sharesShort": 20036642,
+    "sharesShortPriorMonth": 24588806
+  },
+  "MCD": {
+    "shortPercentOfFloat": 0.012999999,
+    "shortRatio": 2.65,
+    "sharesShort": 8304447,
+    "sharesShortPriorMonth": 9162584
+  },
+  "NFLX": {
+    "shortPercentOfFloat": 0.0186,
+    "shortRatio": 2.14,
+    "sharesShort": 77980436,
+    "sharesShortPriorMonth": 81073589
+  },
+  "PFE": {
+    "shortPercentOfFloat": 0.0235,
+    "shortRatio": 3.45,
+    "sharesShort": 133414052,
+    "sharesShortPriorMonth": 131409882
+  },
+  "ABT": {
+    "shortPercentOfFloat": 0.0139999995,
+    "shortRatio": 1.71,
+    "sharesShort": 21746613,
+    "sharesShortPriorMonth": 19950568
+  },
+  "TXN": {
+    "shortPercentOfFloat": 0.0212,
+    "shortRatio": 2.98,
+    "sharesShort": 17319312,
+    "sharesShortPriorMonth": 20066505
+  },
+  "CSCO": {
+    "shortPercentOfFloat": 0.0147,
+    "shortRatio": 2.59,
+    "sharesShort": 58037122,
+    "sharesShortPriorMonth": 65121716
+  },
+  "PM": {
+    "shortPercentOfFloat": 0.0107,
+    "shortRatio": 3.62,
+    "sharesShort": 16619626,
+    "sharesShortPriorMonth": 16360165
+  },
+  "LIN": {
+    "shortPercentOfFloat": 0.0145000005,
+    "shortRatio": 2.75,
+    "sharesShort": 6691027,
+    "sharesShortPriorMonth": 5569079
+  },
+  "ACN": {
+    "shortPercentOfFloat": 0.0327,
+    "shortRatio": 2.39,
+    "sharesShort": 17999223,
+    "sharesShortPriorMonth": 14694453
+  },
+  "NKE": {
+    "shortPercentOfFloat": 0.059299998,
+    "shortRatio": 2.09,
+    "sharesShort": 56120601,
+    "sharesShortPriorMonth": 42717391
+  },
+  "DIS": {
+    "shortPercentOfFloat": 0.0121,
+    "shortRatio": 2.06,
+    "sharesShort": 21388332,
+    "sharesShortPriorMonth": 20093469
+  },
+  "AXP": {
+    "shortPercentOfFloat": 0.0209,
+    "shortRatio": 3.5,
+    "sharesShort": 11051829,
+    "sharesShortPriorMonth": 11020698
+  },
+  "HON": {
+    "shortPercentOfFloat": 0.0175,
+    "shortRatio": 3.04,
+    "sharesShort": 11075141,
+    "sharesShortPriorMonth": 9057823
+  },
+  "INTC": {
+    "shortPercentOfFloat": 0.0287,
+    "shortRatio": 1.38,
+    "sharesShort": 144272202,
+    "sharesShortPriorMonth": 114951944
+  },
+  "IBM": {
+    "shortPercentOfFloat": 0.026199998,
+    "shortRatio": 4.66,
+    "sharesShort": 22172935,
+    "sharesShortPriorMonth": 22177166
+  },
+  "AMGN": {
+    "shortPercentOfFloat": 0.023699999,
+    "shortRatio": 4.66,
+    "sharesShort": 12744432,
+    "sharesShortPriorMonth": 14323209
+  },
+  "GE": {
+    "shortPercentOfFloat": 0.0121,
+    "shortRatio": 2.27,
+    "sharesShort": 12654740,
+    "sharesShortPriorMonth": 11664907
+  },
+  "LOW": {
+    "shortPercentOfFloat": 0.024,
+    "shortRatio": 4.72,
+    "sharesShort": 12057329,
+    "sharesShortPriorMonth": 11775743
+  },
+  "SBUX": {
+    "shortPercentOfFloat": 0.0442,
+    "shortRatio": 6.08,
+    "sharesShort": 45276800,
+    "sharesShortPriorMonth": 47154560
+  },
+  "BA": {
+    "shortPercentOfFloat": 0.002,
+    "shortRatio": 0.24,
+    "sharesShort": 1572642,
+    "sharesShortPriorMonth": 1955447
+  },
+  "RTX": {
+    "shortPercentOfFloat": 0.0099,
+    "shortRatio": 3.09,
+    "sharesShort": 13286137,
+    "sharesShortPriorMonth": 13161836
+  },
+  "CAT": {
+    "shortPercentOfFloat": 0.0164,
+    "shortRatio": 3.27,
+    "sharesShort": 7595776,
+    "sharesShortPriorMonth": 7659420
+  },
+  "NOW": {
+    "shortPercentOfFloat": 0.0378,
+    "shortRatio": 2.0,
+    "sharesShort": 38945953,
+    "sharesShortPriorMonth": 27906982
+  },
+  "INTU": {
+    "shortPercentOfFloat": 0.039,
+    "shortRatio": 2.84,
+    "sharesShort": 9419775,
+    "sharesShortPriorMonth": 7238564
+  },
+  "ISRG": {
+    "shortPercentOfFloat": 0.0189,
+    "shortRatio": 4.03,
+    "sharesShort": 6665406,
+    "sharesShortPriorMonth": 6347786
+  },
+  "GS": {
+    "shortPercentOfFloat": 0.023,
+    "shortRatio": 3.16,
+    "sharesShort": 6757506,
+    "sharesShortPriorMonth": 6179041
+  },
+  "SPGI": {
+    "shortPercentOfFloat": 0.010199999,
+    "shortRatio": 1.53,
+    "sharesShort": 3031297,
+    "sharesShortPriorMonth": 3773466
+  },
+  "MS": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 15814,
+    "sharesShortPriorMonth": 6915
+  },
+  "BLK": {
+    "shortPercentOfFloat": 0.0126,
+    "shortRatio": 2.21,
+    "sharesShort": 1916015,
+    "sharesShortPriorMonth": 1546747
+  },
+  "SYK": {
+    "shortPercentOfFloat": 0.0128999995,
+    "shortRatio": 2.25,
+    "sharesShort": 4718103,
+    "sharesShortPriorMonth": 4065508
+  },
+  "PEP": {
+    "shortPercentOfFloat": 0.016900001,
+    "shortRatio": 3.31,
+    "sharesShort": 20750821,
+    "sharesShortPriorMonth": 21536067
+  },
+  "TMO": {
+    "shortPercentOfFloat": 0.012200001,
+    "shortRatio": 2.38,
+    "sharesShort": 4538918,
+    "sharesShortPriorMonth": 3879909
+  },
+  "PLD": {
+    "shortPercentOfFloat": 0.014199999,
+    "shortRatio": 3.27,
+    "sharesShort": 11497216,
+    "sharesShortPriorMonth": 12401467
+  },
+  "VRTX": {
+    "shortPercentOfFloat": 0.019199999,
+    "shortRatio": 3.2,
+    "sharesShort": 4336502,
+    "sharesShortPriorMonth": 4127429
+  },
+  "REGN": {
+    "shortPercentOfFloat": 0.028399998,
+    "shortRatio": 4.49,
+    "sharesShort": 2841780,
+    "sharesShortPriorMonth": 2451498
+  },
+  "MMC": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 0,
+    "sharesShortPriorMonth": 0
+  },
+  "CB": {
+    "shortPercentOfFloat": 0.0098,
+    "shortRatio": 2.44,
+    "sharesShort": 3805982,
+    "sharesShortPriorMonth": 3952009
+  },
+  "ETN": {
+    "shortPercentOfFloat": 0.020499999,
+    "shortRatio": 3.43,
+    "sharesShort": 7940281,
+    "sharesShortPriorMonth": 7452982
+  },
+  "DE": {
+    "shortPercentOfFloat": 0.017,
+    "shortRatio": 3.45,
+    "sharesShort": 4592765,
+    "sharesShortPriorMonth": 4346333
+  },
+  "BKNG": {
+    "shortPercentOfFloat": 0.0346,
+    "shortRatio": 3.52,
+    "sharesShort": 26903872,
+    "sharesShortPriorMonth": 23878100
+  },
+  "MDT": {
+    "shortPercentOfFloat": 0.0121,
+    "shortRatio": 1.96,
+    "sharesShort": 15456314,
+    "sharesShortPriorMonth": 16594287
+  },
+  "NEE": {
+    "shortPercentOfFloat": 0.0001,
+    "shortRatio": 0.03,
+    "sharesShort": 248855,
+    "sharesShortPriorMonth": 18878
+  },
+  "MO": {
+    "shortPercentOfFloat": 0.0278,
+    "shortRatio": 4.58,
+    "sharesShort": 46387308,
+    "sharesShortPriorMonth": 48741242
+  },
+  "T": {
+    "shortPercentOfFloat": 0.017,
+    "shortRatio": 2.76,
+    "sharesShort": 118293047,
+    "sharesShortPriorMonth": 98098491
+  },
+  "VZ": {
+    "shortPercentOfFloat": 0.0215,
+    "shortRatio": 3.19,
+    "sharesShort": 89726814,
+    "sharesShortPriorMonth": 95282309
+  },
+  "CL": {
+    "shortPercentOfFloat": 0.027,
+    "shortRatio": 3.13,
+    "sharesShort": 19407937,
+    "sharesShortPriorMonth": 20343940
+  },
+  "BMY": {
+    "shortPercentOfFloat": 0.0159,
+    "shortRatio": 2.5,
+    "sharesShort": 32393759,
+    "sharesShortPriorMonth": 29852257
+  },
+  "GILD": {
+    "shortPercentOfFloat": 0.0183,
+    "shortRatio": 3.88,
+    "sharesShort": 22751109,
+    "sharesShortPriorMonth": 19985404
+  },
+  "CI": {
+    "shortPercentOfFloat": 0.0272,
+    "shortRatio": 4.06,
+    "sharesShort": 6417492,
+    "sharesShortPriorMonth": 6404989
+  },
+  "ELV": {
+    "shortPercentOfFloat": 0.0228,
+    "shortRatio": 2.83,
+    "sharesShort": 4417945,
+    "sharesShortPriorMonth": 3669028
+  },
+  "HCA": {
+    "shortPercentOfFloat": 0.026800001,
+    "shortRatio": 4.01,
+    "sharesShort": 3963348,
+    "sharesShortPriorMonth": 3342178
+  },
+  "MCO": {
+    "shortPercentOfFloat": 0.0238,
+    "shortRatio": 3.4,
+    "sharesShort": 3572809,
+    "sharesShortPriorMonth": 2392301
+  },
+  "ICE": {
+    "shortPercentOfFloat": 0.0135,
+    "shortRatio": 2.27,
+    "sharesShort": 6823533,
+    "sharesShortPriorMonth": 6932831
+  },
+  "TJX": {
+    "shortPercentOfFloat": 0.0104,
+    "shortRatio": 2.67,
+    "sharesShort": 11497684,
+    "sharesShortPriorMonth": 12490876
+  },
+  "USB": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 17269,
+    "sharesShortPriorMonth": 21341
+  },
+  "PNC": {
+    "shortPercentOfFloat": 0.0174,
+    "shortRatio": 2.71,
+    "sharesShort": 6969809,
+    "sharesShortPriorMonth": 5816350
+  },
+  "AON": {
+    "shortPercentOfFloat": 0.0114,
+    "shortRatio": 1.81,
+    "sharesShort": 2422507,
+    "sharesShortPriorMonth": 2185755
+  },
+  "ZTS": {
+    "shortPercentOfFloat": 0.0363,
+    "shortRatio": 3.69,
+    "sharesShort": 13501475,
+    "sharesShortPriorMonth": 15699182
+  },
+  "COF": {
+    "shortPercentOfFloat": 0.0135,
+    "shortRatio": 1.6,
+    "sharesShort": 7373447,
+    "sharesShortPriorMonth": 8322247
+  },
+  "APD": {
+    "shortPercentOfFloat": 0.0167,
+    "shortRatio": 2.84,
+    "sharesShort": 3650218,
+    "sharesShortPriorMonth": 4478816
+  },
+  "ECL": {
+    "shortPercentOfFloat": 0.0134000005,
+    "shortRatio": 2.16,
+    "sharesShort": 3321190,
+    "sharesShortPriorMonth": 3045658
+  },
+  "CME": {
+    "shortPercentOfFloat": 0.0147,
+    "shortRatio": 2.24,
+    "sharesShort": 4804467,
+    "sharesShortPriorMonth": 5566514
+  },
+  "LRCX": {
+    "shortPercentOfFloat": 0.0233,
+    "shortRatio": 2.54,
+    "sharesShort": 26059416,
+    "sharesShortPriorMonth": 26933774
+  },
+  "KLAC": {
+    "shortPercentOfFloat": 0.028399998,
+    "shortRatio": 3.57,
+    "sharesShort": 3341196,
+    "sharesShortPriorMonth": 2995660
+  },
+  "AMAT": {
+    "shortPercentOfFloat": 0.0172,
+    "shortRatio": 2.15,
+    "sharesShort": 13594148,
+    "sharesShortPriorMonth": 13683911
+  },
+  "PANW": {
+    "shortPercentOfFloat": 0.0321,
+    "shortRatio": 3.06,
+    "sharesShort": 25811496,
+    "sharesShortPriorMonth": 25066976
+  },
+  "MU": {
+    "shortPercentOfFloat": 0.0323,
+    "shortRatio": 0.69,
+    "sharesShort": 36327421,
+    "sharesShortPriorMonth": 29425323
+  },
+  "SNPS": {
+    "shortPercentOfFloat": 0.0235,
+    "shortRatio": 2.52,
+    "sharesShort": 4477288,
+    "sharesShortPriorMonth": 4682955
+  },
+  "CDNS": {
+    "shortPercentOfFloat": 0.0215,
+    "shortRatio": 2.75,
+    "sharesShort": 5910408,
+    "sharesShortPriorMonth": 6202044
+  },
+  "ADI": {
+    "shortPercentOfFloat": 0.0228,
+    "shortRatio": 3.04,
+    "sharesShort": 9966623,
+    "sharesShortPriorMonth": 9380638
+  },
+  "MRVL": {
+    "shortPercentOfFloat": 0.039,
+    "shortRatio": 1.16,
+    "sharesShort": 28955038,
+    "sharesShortPriorMonth": 33803277
+  },
+  "QCOM": {
+    "shortPercentOfFloat": 0.051,
+    "shortRatio": 3.79,
+    "sharesShort": 48642638,
+    "sharesShortPriorMonth": 39627080
+  },
+  "WFC": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 1912,
+    "sharesShortPriorMonth": 1941
+  },
+  "SCHW": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 11517,
+    "sharesShortPriorMonth": 26809
+  },
+  "AIG": {
+    "shortPercentOfFloat": 0.0159,
+    "shortRatio": 1.97,
+    "sharesShort": 7378186,
+    "sharesShortPriorMonth": 8586357
+  },
+  "ALL": {
+    "shortPercentOfFloat": 0.0001,
+    "shortRatio": 0.01,
+    "sharesShort": 14399,
+    "sharesShortPriorMonth": 41620
+  },
+  "PRU": {
+    "shortPercentOfFloat": 0.038599998,
+    "shortRatio": 5.4,
+    "sharesShort": 11798375,
+    "sharesShortPriorMonth": 9878491
+  },
+  "AFL": {
+    "shortPercentOfFloat": 0.020299999,
+    "shortRatio": 3.45,
+    "sharesShort": 8136195,
+    "sharesShortPriorMonth": 8471721
+  },
+  "MET": {
+    "shortPercentOfFloat": 0.0232,
+    "shortRatio": 3.46,
+    "sharesShort": 12543207,
+    "sharesShortPriorMonth": 12852689
+  },
+  "TRV": {
+    "shortPercentOfFloat": 0.0215,
+    "shortRatio": 2.97,
+    "sharesShort": 4067027,
+    "sharesShortPriorMonth": 4009514
+  },
+  "PGR": {
+    "shortPercentOfFloat": 0.0137,
+    "shortRatio": 2.57,
+    "sharesShort": 7969339,
+    "sharesShortPriorMonth": 6618254
+  },
+  "BK": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 15400,
+    "sharesShortPriorMonth": 34954
+  },
+  "STT": {
+    "shortPercentOfFloat": 0.0001,
+    "shortRatio": 0.02,
+    "sharesShort": 35835,
+    "sharesShortPriorMonth": 60448
+  },
+  "FITB": {
+    "shortPercentOfFloat": 0.0544,
+    "shortRatio": 4.36,
+    "sharesShort": 40681385,
+    "sharesShortPriorMonth": 38849444
+  },
+  "KEY": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 9469,
+    "sharesShortPriorMonth": 19531
+  },
+  "RF": {
+    "shortPercentOfFloat": 0.0788,
+    "shortRatio": 3.75,
+    "sharesShort": 50960398,
+    "sharesShortPriorMonth": 56169851
+  },
+  "MMM": {
+    "shortPercentOfFloat": 0.0153,
+    "shortRatio": 2.41,
+    "sharesShort": 7977062,
+    "sharesShortPriorMonth": 8420404
+  },
+  "FDX": {
+    "shortPercentOfFloat": 0.0138,
+    "shortRatio": 1.62,
+    "sharesShort": 3275799,
+    "sharesShortPriorMonth": 2884520
+  },
+  "UPS": {
+    "shortPercentOfFloat": 0.022,
+    "shortRatio": 2.61,
+    "sharesShort": 16395706,
+    "sharesShortPriorMonth": 18619636
+  },
+  "EMR": {
+    "shortPercentOfFloat": 0.0223,
+    "shortRatio": 4.16,
+    "sharesShort": 12488609,
+    "sharesShortPriorMonth": 14231687
+  },
+  "GD": {
+    "shortPercentOfFloat": 0.0111,
+    "shortRatio": 1.96,
+    "sharesShort": 2677322,
+    "sharesShortPriorMonth": 2186996
+  },
+  "LMT": {
+    "shortPercentOfFloat": 0.0128999995,
+    "shortRatio": 1.81,
+    "sharesShort": 2501568,
+    "sharesShortPriorMonth": 2772317
+  },
+  "NOC": {
+    "shortPercentOfFloat": 0.012,
+    "shortRatio": 2.3,
+    "sharesShort": 1707687,
+    "sharesShortPriorMonth": 2150088
+  },
+  "SLB": {
+    "shortPercentOfFloat": 0.0494,
+    "shortRatio": 3.38,
+    "sharesShort": 64909130,
+    "sharesShortPriorMonth": 64119300
+  },
+  "BSX": {
+    "shortPercentOfFloat": 0.0173,
+    "shortRatio": 1.66,
+    "sharesShort": 25614558,
+    "sharesShortPriorMonth": 25441563
+  },
+  "EW": {
+    "shortPercentOfFloat": 0.0184,
+    "shortRatio": 2.05,
+    "sharesShort": 9331359,
+    "sharesShortPriorMonth": 10945893
+  },
+  "NSC": {
+    "shortPercentOfFloat": 0.0385,
+    "shortRatio": 6.24,
+    "sharesShort": 8631948,
+    "sharesShortPriorMonth": 8726471
+  },
+  "UNP": {
+    "shortPercentOfFloat": 0.0497,
+    "shortRatio": 9.66,
+    "sharesShort": 26536709,
+    "sharesShortPriorMonth": 26520645
+  },
+  "CSX": {
+    "shortPercentOfFloat": 0.0227,
+    "shortRatio": 3.31,
+    "sharesShort": 42065384,
+    "sharesShortPriorMonth": 35323306
+  },
+  "GWW": {
+    "shortPercentOfFloat": 0.0297,
+    "shortRatio": 4.96,
+    "sharesShort": 1180462,
+    "sharesShortPriorMonth": 1185917
+  },
+  "ITW": {
+    "shortPercentOfFloat": 0.0312,
+    "shortRatio": 7.2,
+    "sharesShort": 8961212,
+    "sharesShortPriorMonth": 8816732
+  },
+  "PH": {
+    "shortPercentOfFloat": 0.0107,
+    "shortRatio": 1.89,
+    "sharesShort": 1342069,
+    "sharesShortPriorMonth": 1311295
+  },
+  "AME": {
+    "shortPercentOfFloat": 0.016,
+    "shortRatio": 2.71,
+    "sharesShort": 3243874,
+    "sharesShortPriorMonth": 2833916
+  },
+  "TGT": {
+    "shortPercentOfFloat": 0.036,
+    "shortRatio": 2.93,
+    "sharesShort": 16300360,
+    "sharesShortPriorMonth": 18467892
+  },
+  "DG": {
+    "shortPercentOfFloat": 0.0424,
+    "shortRatio": 2.42,
+    "sharesShort": 8253590,
+    "sharesShortPriorMonth": 8687763
+  },
+  "KR": {
+    "shortPercentOfFloat": 0.048600003,
+    "shortRatio": 4.25,
+    "sharesShort": 25670927,
+    "sharesShortPriorMonth": 26327649
+  },
+  "CVS": {
+    "shortPercentOfFloat": 0.014400001,
+    "shortRatio": 2.39,
+    "sharesShort": 18350833,
+    "sharesShortPriorMonth": 17812471
+  },
+  "MCK": {
+    "shortPercentOfFloat": 0.0211,
+    "shortRatio": 3.34,
+    "sharesShort": 2576911,
+    "sharesShortPriorMonth": 1921129
+  },
+  "IQV": {
+    "shortPercentOfFloat": 0.033099998,
+    "shortRatio": 3.34,
+    "sharesShort": 4805253,
+    "sharesShortPriorMonth": 4208744
+  },
+  "DGX": {
+    "shortPercentOfFloat": 0.0322,
+    "shortRatio": 4.12,
+    "sharesShort": 3551568,
+    "sharesShortPriorMonth": 3871587
+  },
+  "A": {
+    "shortPercentOfFloat": 0.018,
+    "shortRatio": 2.33,
+    "sharesShort": 4481687,
+    "sharesShortPriorMonth": 4778684
+  },
+  "STE": {
+    "shortPercentOfFloat": 0.0188,
+    "shortRatio": 2.36,
+    "sharesShort": 1617823,
+    "sharesShortPriorMonth": 1758013
+  },
+  "ADSK": {
+    "shortPercentOfFloat": 0.024500001,
+    "shortRatio": 2.49,
+    "sharesShort": 5163333,
+    "sharesShortPriorMonth": 5620907
+  },
+  "IT": {
+    "shortPercentOfFloat": 0.1714,
+    "shortRatio": 5.7,
+    "sharesShort": 8390846,
+    "sharesShortPriorMonth": 7626397
+  },
+  "GDDY": {
+    "shortPercentOfFloat": 0.0555,
+    "shortRatio": 2.71,
+    "sharesShort": 5589625,
+    "sharesShortPriorMonth": 5564190
+  },
+  "VRSN": {
+    "shortPercentOfFloat": 0.019,
+    "shortRatio": 1.92,
+    "sharesShort": 1717527,
+    "sharesShortPriorMonth": 1800285
+  },
+  "CDW": {
+    "shortPercentOfFloat": 0.0533,
+    "shortRatio": 3.76,
+    "sharesShort": 5909706,
+    "sharesShortPriorMonth": 4593742
+  },
+  "WDC": {
+    "shortPercentOfFloat": 0.0892,
+    "shortRatio": 3.07,
+    "sharesShort": 26758181,
+    "sharesShortPriorMonth": 27567965
+  },
+  "STX": {
+    "shortPercentOfFloat": 0.0432,
+    "shortRatio": 2.16,
+    "sharesShort": 8441958,
+    "sharesShortPriorMonth": 9878452
+  },
+  "HPQ": {
+    "shortPercentOfFloat": 0.1515,
+    "shortRatio": 6.06,
+    "sharesShort": 118793634,
+    "sharesShortPriorMonth": 102982716
+  },
+  "DELL": {
+    "shortPercentOfFloat": 0.083100006,
+    "shortRatio": 2.62,
+    "sharesShort": 23145674,
+    "sharesShortPriorMonth": 24978298
+  },
+  "ZBRA": {
+    "shortPercentOfFloat": 0.053400002,
+    "shortRatio": 3.18,
+    "sharesShort": 2210997,
+    "sharesShortPriorMonth": 2296532
+  },
+  "COP": {
+    "shortPercentOfFloat": 0.0163,
+    "shortRatio": 1.93,
+    "sharesShort": 19807604,
+    "sharesShortPriorMonth": 23829040
+  },
+  "EOG": {
+    "shortPercentOfFloat": 0.0332,
+    "shortRatio": 3.31,
+    "sharesShort": 15932921,
+    "sharesShortPriorMonth": 16236736
+  },
+  "DVN": {
+    "shortPercentOfFloat": 0.055999998,
+    "shortRatio": 1.76,
+    "sharesShort": 30403148,
+    "sharesShortPriorMonth": 24394823
+  },
+  "OXY": {
+    "shortPercentOfFloat": 0.0002,
+    "shortRatio": 0.01,
+    "sharesShort": 109957,
+    "sharesShortPriorMonth": 109460
+  },
+  "HAL": {
+    "shortPercentOfFloat": 0.045300003,
+    "shortRatio": 1.62,
+    "sharesShort": 27872284,
+    "sharesShortPriorMonth": 36815095
+  },
+  "MPC": {
+    "shortPercentOfFloat": 0.0249,
+    "shortRatio": 2.37,
+    "sharesShort": 6348348,
+    "sharesShortPriorMonth": 8038630
+  },
+  "PSX": {
+    "shortPercentOfFloat": 0.0185,
+    "shortRatio": 1.79,
+    "sharesShort": 6459755,
+    "sharesShortPriorMonth": 8223644
+  },
+  "VLO": {
+    "shortPercentOfFloat": 0.0341,
+    "shortRatio": 2.07,
+    "sharesShort": 8844189,
+    "sharesShortPriorMonth": 13987365
+  },
+  "HES": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 0,
+    "sharesShortPriorMonth": 0
+  },
+  "MRO": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 0,
+    "sharesShortPriorMonth": 0
+  },
+  "EQT": {
+    "shortPercentOfFloat": 0.0343,
+    "shortRatio": 2.29,
+    "sharesShort": 18785186,
+    "sharesShortPriorMonth": 24754788
+  },
+  "D": {
+    "shortPercentOfFloat": 0.028800001,
+    "shortRatio": 5.57,
+    "sharesShort": 22722522,
+    "sharesShortPriorMonth": 24502249
+  },
+  "DUK": {
+    "shortPercentOfFloat": 0.0225,
+    "shortRatio": 3.96,
+    "sharesShort": 15717291,
+    "sharesShortPriorMonth": 15917824
+  },
+  "SO": {
+    "shortPercentOfFloat": 0.0223,
+    "shortRatio": 5.17,
+    "sharesShort": 25093807,
+    "sharesShortPriorMonth": 24071698
+  },
+  "SRE": {
+    "shortPercentOfFloat": 0.0172,
+    "shortRatio": 2.94,
+    "sharesShort": 9911937,
+    "sharesShortPriorMonth": 8870993
+  },
+  "ES": {
+    "shortPercentOfFloat": 0.028900001,
+    "shortRatio": 3.04,
+    "sharesShort": 8262857,
+    "sharesShortPriorMonth": 7762183
+  },
+  "PPL": {
+    "shortPercentOfFloat": 0.0583,
+    "shortRatio": 5.94,
+    "sharesShort": 38265346,
+    "sharesShortPriorMonth": 39861164
+  },
+  "CMS": {
+    "shortPercentOfFloat": 0.0001,
+    "shortRatio": 0.01,
+    "sharesShort": 13518,
+    "sharesShortPriorMonth": 46596
+  },
+  "ATO": {
+    "shortPercentOfFloat": 0.026400002,
+    "shortRatio": 3.93,
+    "sharesShort": 3841232,
+    "sharesShortPriorMonth": 4062398
+  },
+  "WEC": {
+    "shortPercentOfFloat": 0.0517,
+    "shortRatio": 7.99,
+    "sharesShort": 14659218,
+    "sharesShortPriorMonth": 14777091
+  },
+  "XEL": {
+    "shortPercentOfFloat": 0.0508,
+    "shortRatio": 6.4,
+    "sharesShort": 28023038,
+    "sharesShortPriorMonth": 25611258
+  },
+  "PCG": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 1924,
+    "sharesShortPriorMonth": 1922
+  },
+  "SPG": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 374,
+    "sharesShortPriorMonth": 2373
+  },
+  "AMT": {
+    "shortPercentOfFloat": 0.016900001,
+    "shortRatio": 2.0,
+    "sharesShort": 6841061,
+    "sharesShortPriorMonth": 6536992
+  },
+  "CCI": {
+    "shortPercentOfFloat": 0.028800001,
+    "shortRatio": 3.43,
+    "sharesShort": 10585030,
+    "sharesShortPriorMonth": 10225288
+  },
+  "EQIX": {
+    "shortPercentOfFloat": 0.021,
+    "shortRatio": 3.28,
+    "sharesShort": 1812304,
+    "sharesShortPriorMonth": 1928427
+  },
+  "PSA": {
+    "shortPercentOfFloat": 0.052199997,
+    "shortRatio": 5.1,
+    "sharesShort": 6910194,
+    "sharesShortPriorMonth": 5113900
+  },
+  "WELL": {
+    "shortPercentOfFloat": 0.0276,
+    "shortRatio": 5.79,
+    "sharesShort": 17097209,
+    "sharesShortPriorMonth": 17053654
+  },
+  "DLR": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.01,
+    "sharesShort": 12927,
+    "sharesShortPriorMonth": 11370
+  },
+  "O": {
+    "shortPercentOfFloat": 0.0376,
+    "shortRatio": 5.26,
+    "sharesShort": 30761831,
+    "sharesShortPriorMonth": 24679335
+  },
+  "EQR": {
+    "shortPercentOfFloat": 0.0309,
+    "shortRatio": 4.21,
+    "sharesShort": 10317646,
+    "sharesShortPriorMonth": 9073556
+  },
+  "AVB": {
+    "shortPercentOfFloat": 0.045900002,
+    "shortRatio": 4.47,
+    "sharesShort": 4569646,
+    "sharesShortPriorMonth": 4570354
+  },
+  "EXR": {
+    "shortPercentOfFloat": 0.0347,
+    "shortRatio": 4.28,
+    "sharesShort": 5356033,
+    "sharesShortPriorMonth": 5898892
+  },
+  "IRM": {
+    "shortPercentOfFloat": 0.0366,
+    "shortRatio": 5.87,
+    "sharesShort": 8021715,
+    "sharesShortPriorMonth": 8465576
+  },
+  "UBER": {
+    "shortPercentOfFloat": 0.028499998,
+    "shortRatio": 3.66,
+    "sharesShort": 55932355,
+    "sharesShortPriorMonth": 53777087
+  },
+  "DASH": {
+    "shortPercentOfFloat": 0.0297,
+    "shortRatio": 2.87,
+    "sharesShort": 12127547,
+    "sharesShortPriorMonth": 11563573
+  },
+  "RCL": {
+    "shortPercentOfFloat": 0.0683,
+    "shortRatio": 5.42,
+    "sharesShort": 12554777,
+    "sharesShortPriorMonth": 12134740
+  },
+  "HLT": {
+    "shortPercentOfFloat": 0.029000001,
+    "shortRatio": 3.6,
+    "sharesShort": 5760045,
+    "sharesShortPriorMonth": 5723288
+  },
+  "CCL": {
+    "shortPercentOfFloat": 0.0375,
+    "shortRatio": 1.52,
+    "sharesShort": 42878638,
+    "sharesShortPriorMonth": 42158941
+  },
+  "DAL": {
+    "shortPercentOfFloat": 0.039300002,
+    "shortRatio": 1.63,
+    "sharesShort": 22908889,
+    "sharesShortPriorMonth": 16512785
+  },
+  "UAL": {
+    "shortPercentOfFloat": 0.044299997,
+    "shortRatio": 1.72,
+    "sharesShort": 14263576,
+    "sharesShortPriorMonth": 12925741
+  },
+  "NET": {
+    "shortPercentOfFloat": 0.030199999,
+    "shortRatio": 1.83,
+    "sharesShort": 8519228,
+    "sharesShortPriorMonth": 8218719
+  },
+  "SNOW": {
+    "shortPercentOfFloat": 0.0535,
+    "shortRatio": 2.58,
+    "sharesShort": 18009657,
+    "sharesShortPriorMonth": 13596963
+  },
+  "MDB": {
+    "shortPercentOfFloat": 0.0414,
+    "shortRatio": 2.11,
+    "sharesShort": 3226440,
+    "sharesShortPriorMonth": 3604266
+  },
+  "VEEV": {
+    "shortPercentOfFloat": 0.039,
+    "shortRatio": 2.75,
+    "sharesShort": 5821298,
+    "sharesShortPriorMonth": 5536607
+  },
+  "HUBS": {
+    "shortPercentOfFloat": 0.0791,
+    "shortRatio": 2.51,
+    "sharesShort": 3607730,
+    "sharesShortPriorMonth": 2562507
+  },
+  "TWLO": {
+    "shortPercentOfFloat": 0.048499998,
+    "shortRatio": 3.2,
+    "sharesShort": 6464389,
+    "sharesShortPriorMonth": 5627420
+  },
+  "PINS": {
+    "shortPercentOfFloat": 0.18879999,
+    "shortRatio": 4.21,
+    "sharesShort": 70785235,
+    "sharesShortPriorMonth": 86344123
+  },
+  "F": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 15054,
+    "sharesShortPriorMonth": 21386
+  },
+  "GM": {
+    "shortPercentOfFloat": 0.0215,
+    "shortRatio": 2.75,
+    "sharesShort": 19389019,
+    "sharesShortPriorMonth": 20523002
+  },
+  "ADBE": {
+    "shortPercentOfFloat": 0.040700004,
+    "shortRatio": 2.67,
+    "sharesShort": 14737592,
+    "sharesShortPriorMonth": 13194456
+  },
+  "APP": {
+    "shortPercentOfFloat": 0.042600002,
+    "shortRatio": 2.81,
+    "sharesShort": 12473580,
+    "sharesShortPriorMonth": 13134451
+  },
+  "PLTR": {
+    "shortPercentOfFloat": 0.024300002,
+    "shortRatio": 1.1,
+    "sharesShort": 53170985,
+    "sharesShortPriorMonth": 52613250
+  },
+  "CRWD": {
+    "shortPercentOfFloat": 0.026199998,
+    "shortRatio": 1.63,
+    "sharesShort": 6438721,
+    "sharesShortPriorMonth": 7579146
+  },
+  "ANET": {
+    "shortPercentOfFloat": 0.0166,
+    "shortRatio": 2.56,
+    "sharesShort": 17318355,
+    "sharesShortPriorMonth": 15365120
+  },
+  "DDOG": {
+    "shortPercentOfFloat": 0.044699997,
+    "shortRatio": 2.78,
+    "sharesShort": 12737642,
+    "sharesShortPriorMonth": 8831630
+  },
+  "WDAY": {
+    "shortPercentOfFloat": 0.0923,
+    "shortRatio": 3.9,
+    "sharesShort": 19284775,
+    "sharesShortPriorMonth": 15563349
+  },
+  "FTNT": {
+    "shortPercentOfFloat": 0.0317,
+    "shortRatio": 3.03,
+    "sharesShort": 19357643,
+    "sharesShortPriorMonth": 19147172
+  },
+  "ZS": {
+    "shortPercentOfFloat": 0.1008,
+    "shortRatio": 3.53,
+    "sharesShort": 10509226,
+    "sharesShortPriorMonth": 7830249
+  },
+  "COIN": {
+    "shortPercentOfFloat": 0.1282,
+    "shortRatio": 2.3,
+    "sharesShort": 25200655,
+    "sharesShortPriorMonth": 22640514
+  },
+  "PYPL": {
+    "shortPercentOfFloat": 0.0558,
+    "shortRatio": 2.77,
+    "sharesShort": 45146895,
+    "sharesShortPriorMonth": 43188795
+  },
+  "ABNB": {
+    "shortPercentOfFloat": 0.0348,
+    "shortRatio": 4.21,
+    "sharesShort": 14433729,
+    "sharesShortPriorMonth": 14461248
+  },
+  "TEAM": {
+    "shortPercentOfFloat": 0.0792,
+    "shortRatio": 2.15,
+    "sharesShort": 13393747,
+    "sharesShortPriorMonth": 10463097
+  },
+  "TTD": {
+    "shortPercentOfFloat": 0.1984,
+    "shortRatio": 3.61,
+    "sharesShort": 72127938,
+    "sharesShortPriorMonth": 49900783
+  },
+  "OKTA": {
+    "shortPercentOfFloat": 0.0533,
+    "shortRatio": 2.02,
+    "sharesShort": 8051689,
+    "sharesShortPriorMonth": 6626282
+  },
+  "TMUS": {
+    "shortPercentOfFloat": 0.0433,
+    "shortRatio": 3.15,
+    "sharesShort": 18487224,
+    "sharesShortPriorMonth": 11985221
+  },
+  "NDAQ": {
+    "shortPercentOfFloat": 0.0168,
+    "shortRatio": 2.56,
+    "sharesShort": 7521274,
+    "sharesShortPriorMonth": 7068775
+  },
+  "FISV": {
+    "shortPercentOfFloat": 0.0,
+    "shortRatio": 0.0,
+    "sharesShort": 0,
+    "sharesShortPriorMonth": 0
+  },
+  "SMCI": {
+    "shortPercentOfFloat": 0.1933,
+    "shortRatio": 1.79,
+    "sharesShort": 86791119,
+    "sharesShortPriorMonth": 88484577
+  },
+  "NTAP": {
+    "shortPercentOfFloat": 0.1145,
+    "shortRatio": 8.51,
+    "sharesShort": 19559310,
+    "sharesShortPriorMonth": 18493989
+  },
+  "PSTG": {
+    "shortPercentOfFloat": 0.037100002,
+    "shortRatio": 3.5,
+    "sharesShort": 9891091,
+    "sharesShortPriorMonth": 7535265
+  },
+  "DHR": {
+    "shortPercentOfFloat": 0.0128999995,
+    "shortRatio": 2.14,
+    "sharesShort": 8176911,
+    "sharesShortPriorMonth": 5550751
+  },
+  "BDX": {
+    "shortPercentOfFloat": 0.0287,
+    "shortRatio": 3.06,
+    "sharesShort": 7213805,
+    "sharesShortPriorMonth": 11469470
+  },
+  "HUM": {
+    "shortPercentOfFloat": 0.0513,
+    "shortRatio": 3.06,
+    "sharesShort": 5422616,
+    "sharesShortPriorMonth": 4977893
+  },
+  "RMD": {
+    "shortPercentOfFloat": 0.090900004,
+    "shortRatio": 11.56,
+    "sharesShort": 11494456,
+    "sharesShortPriorMonth": 11845253
+  },
+  "DXCM": {
+    "shortPercentOfFloat": 0.045300003,
+    "shortRatio": 3.77,
+    "sharesShort": 15190268,
+    "sharesShortPriorMonth": 16295751
+  },
+  "BIIB": {
+    "shortPercentOfFloat": 0.038900003,
+    "shortRatio": 3.47,
+    "sharesShort": 4414958,
+    "sharesShortPriorMonth": 4334795
+  },
+  "IDXX": {
+    "shortPercentOfFloat": 0.0297,
+    "shortRatio": 4.06,
+    "sharesShort": 2064422,
+    "sharesShortPriorMonth": 1801236
+  },
+  "GEHC": {
+    "shortPercentOfFloat": 0.0301,
+    "shortRatio": 3.37,
+    "sharesShort": 12137558,
+    "sharesShortPriorMonth": 11030659
+  },
+  "MTD": {
+    "shortPercentOfFloat": 0.0367,
+    "shortRatio": 4.23,
+    "sharesShort": 648008,
+    "sharesShortPriorMonth": 508607
+  },
+  "HOLX": {
+    "shortPercentOfFloat": 0.0366,
+    "shortRatio": 2.78,
+    "sharesShort": 7100246,
+    "sharesShortPriorMonth": 4834145
+  },
+  "AMP": {
+    "shortPercentOfFloat": 0.0392,
+    "shortRatio": 3.65,
+    "sharesShort": 2655355,
+    "sharesShortPriorMonth": 2874258
+  },
+  "TROW": {
+    "shortPercentOfFloat": 0.1289,
+    "shortRatio": 8.93,
+    "sharesShort": 24228261,
+    "sharesShortPriorMonth": 24519983
+  },
+  "SYF": {
+    "shortPercentOfFloat": 0.0616,
+    "shortRatio": 4.15,
+    "sharesShort": 14658820,
+    "sharesShortPriorMonth": 15515556
+  },
+  "CBOE": {
+    "shortPercentOfFloat": 0.0298,
+    "shortRatio": 2.87,
+    "sharesShort": 2549419,
+    "sharesShortPriorMonth": 2578029
+  },
+  "MTB": {
+    "shortPercentOfFloat": 0.0471,
+    "shortRatio": 5.22,
+    "sharesShort": 5976150,
+    "sharesShortPriorMonth": 7001094
+  },
+  "CFG": {
+    "shortPercentOfFloat": 0.0001,
+    "shortRatio": 0.01,
+    "sharesShort": 46369,
+    "sharesShortPriorMonth": 71229
+  },
+  "HBAN": {
+    "shortPercentOfFloat": 0.0345,
+    "shortRatio": 2.8,
+    "sharesShort": 69703161,
+    "sharesShortPriorMonth": 76665019
+  },
+  "BR": {
+    "shortPercentOfFloat": 0.0322,
+    "shortRatio": 1.83,
+    "sharesShort": 3298991,
+    "sharesShortPriorMonth": 4307169
+  },
+  "FIS": {
+    "shortPercentOfFloat": 0.0321,
+    "shortRatio": 2.06,
+    "sharesShort": 14284204,
+    "sharesShortPriorMonth": 13914746
+  },
+  "GPN": {
+    "shortPercentOfFloat": 0.0544,
+    "shortRatio": 3.87,
+    "sharesShort": 12553481,
+    "sharesShortPriorMonth": 10694317
+  },
+  "CMG": {
+    "shortPercentOfFloat": 0.0286,
+    "shortRatio": 2.57,
+    "sharesShort": 36971569,
+    "sharesShortPriorMonth": 46423112
+  },
+  "ULTA": {
+    "shortPercentOfFloat": 0.047,
+    "shortRatio": 2.53,
+    "sharesShort": 2046357,
+    "sharesShortPriorMonth": 1923421
+  },
+  "YUM": {
+    "shortPercentOfFloat": 0.0278,
+    "shortRatio": 4.18,
+    "sharesShort": 6738874,
+    "sharesShortPriorMonth": 6542959
+  },
+  "DECK": {
+    "shortPercentOfFloat": 0.0364,
+    "shortRatio": 1.83,
+    "sharesShort": 3662760,
+    "sharesShortPriorMonth": 3930151
+  },
+  "WSM": {
+    "shortPercentOfFloat": 0.0793,
+    "shortRatio": 4.92,
+    "sharesShort": 7072779,
+    "sharesShortPriorMonth": 7161527
+  },
+  "EXPE": {
+    "shortPercentOfFloat": 0.0684,
+    "shortRatio": 3.82,
+    "sharesShort": 6910739,
+    "sharesShortPriorMonth": 6708399
+  },
+  "MGM": {
+    "shortPercentOfFloat": 0.137,
+    "shortRatio": 4.64,
+    "sharesShort": 20817659,
+    "sharesShortPriorMonth": 23688418
+  },
+  "LVS": {
+    "shortPercentOfFloat": 0.0883,
+    "shortRatio": 3.68,
+    "sharesShort": 12628163,
+    "sharesShortPriorMonth": 10219140
+  },
+  "RL": {
+    "shortPercentOfFloat": 0.0904,
+    "shortRatio": 4.65,
+    "sharesShort": 2941715,
+    "sharesShortPriorMonth": 2309505
+  },
+  "BBWI": {
+    "shortPercentOfFloat": 0.0866,
+    "shortRatio": 2.49,
+    "sharesShort": 14938394,
+    "sharesShortPriorMonth": 15334823
+  },
+  "STZ": {
+    "shortPercentOfFloat": 0.0343,
+    "shortRatio": 2.46,
+    "sharesShort": 5680633,
+    "sharesShortPriorMonth": 7506304
+  },
+  "EL": {
+    "shortPercentOfFloat": 0.0375,
+    "shortRatio": 1.46,
+    "sharesShort": 8256742,
+    "sharesShortPriorMonth": 9078623
+  },
+  "CHD": {
+    "shortPercentOfFloat": 0.037,
+    "shortRatio": 3.66,
+    "sharesShort": 7634001,
+    "sharesShortPriorMonth": 9654304
+  },
+  "CAG": {
+    "shortPercentOfFloat": 0.1103,
+    "shortRatio": 2.4,
+    "sharesShort": 40792866,
+    "sharesShortPriorMonth": 39505403
+  },
+  "HRL": {
+    "shortPercentOfFloat": 0.0774,
+    "shortRatio": 4.67,
+    "sharesShort": 22608055,
+    "sharesShortPriorMonth": 19869757
+  },
+  "TT": {
+    "shortPercentOfFloat": 0.0166,
+    "shortRatio": 2.74,
+    "sharesShort": 3654981,
+    "sharesShortPriorMonth": 2759773
+  },
+  "CARR": {
+    "shortPercentOfFloat": 0.0273,
+    "shortRatio": 2.63,
+    "sharesShort": 18867342,
+    "sharesShortPriorMonth": 19929260
+  },
+  "OTIS": {
+    "shortPercentOfFloat": 0.0336,
+    "shortRatio": 3.07,
+    "sharesShort": 11236740,
+    "sharesShortPriorMonth": 10084254
+  },
+  "ROK": {
+    "shortPercentOfFloat": 0.033299997,
+    "shortRatio": 3.92,
+    "sharesShort": 3281867,
+    "sharesShortPriorMonth": 2898828
+  },
+  "IR": {
+    "shortPercentOfFloat": 0.059499998,
+    "shortRatio": 5.73,
+    "sharesShort": 17964306,
+    "sharesShortPriorMonth": 14977773
+  },
+  "WM": {
+    "shortPercentOfFloat": 0.0154,
+    "shortRatio": 3.41,
+    "sharesShort": 6193603,
+    "sharesShortPriorMonth": 5971202
+  },
+  "RSG": {
+    "shortPercentOfFloat": 0.0150999995,
+    "shortRatio": 1.97,
+    "sharesShort": 2995165,
+    "sharesShortPriorMonth": 3130548
+  },
+  "PWR": {
+    "shortPercentOfFloat": 0.036,
+    "shortRatio": 4.48,
+    "sharesShort": 4708279,
+    "sharesShortPriorMonth": 4440619
+  },
+  "XYL": {
+    "shortPercentOfFloat": 0.028099999,
+    "shortRatio": 2.49,
+    "sharesShort": 5273197,
+    "sharesShortPriorMonth": 4037620
+  },
+  "HUBB": {
+    "shortPercentOfFloat": 0.055,
+    "shortRatio": 4.71,
+    "sharesShort": 2532996,
+    "sharesShortPriorMonth": 2532152
+  },
+  "SHW": {
+    "shortPercentOfFloat": 0.0217,
+    "shortRatio": 3.11,
+    "sharesShort": 5364251,
+    "sharesShortPriorMonth": 4584722
+  },
+  "FCX": {
+    "shortPercentOfFloat": 0.019,
+    "shortRatio": 1.41,
+    "sharesShort": 27122545,
+    "sharesShortPriorMonth": 27928918
+  },
+  "NEM": {
+    "shortPercentOfFloat": 0.020299999,
+    "shortRatio": 1.67,
+    "sharesShort": 19014992,
+    "sharesShortPriorMonth": 21256668
+  },
+  "NUE": {
+    "shortPercentOfFloat": 0.0256,
+    "shortRatio": 3.13,
+    "sharesShort": 4397729,
+    "sharesShortPriorMonth": 4414839
+  },
+  "STLD": {
+    "shortPercentOfFloat": 0.0356,
+    "shortRatio": 3.53,
+    "sharesShort": 4097050,
+    "sharesShortPriorMonth": 3633235
+  },
+  "CF": {
+    "shortPercentOfFloat": 0.0616,
+    "shortRatio": 1.38,
+    "sharesShort": 7928906,
+    "sharesShortPriorMonth": 8953874
+  },
+  "MOS": {
+    "shortPercentOfFloat": 0.0766,
+    "shortRatio": 1.7,
+    "sharesShort": 18340920,
+    "sharesShortPriorMonth": 21242907
+  },
+  "PKG": {
+    "shortPercentOfFloat": 0.044499997,
+    "shortRatio": 3.25,
+    "sharesShort": 3403452,
+    "sharesShortPriorMonth": 5228241
+  },
+  "BKR": {
+    "shortPercentOfFloat": 0.026600001,
+    "shortRatio": 2.5,
+    "sharesShort": 23075460,
+    "sharesShortPriorMonth": 21969588
+  },
+  "OKE": {
+    "shortPercentOfFloat": 0.0463,
+    "shortRatio": 4.82,
+    "sharesShort": 25922026,
+    "sharesShortPriorMonth": 26946418
+  },
+  "KMI": {
+    "shortPercentOfFloat": 0.025,
+    "shortRatio": 3.52,
+    "sharesShort": 48592197,
+    "sharesShortPriorMonth": 43346318
+  },
+  "WMB": {
+    "shortPercentOfFloat": 0.0159,
+    "shortRatio": 2.81,
+    "sharesShort": 17283923,
+    "sharesShortPriorMonth": 15479550
+  },
+  "LNG": {
+    "shortPercentOfFloat": 0.0216,
+    "shortRatio": 1.14,
+    "sharesShort": 4520023,
+    "sharesShortPriorMonth": 4552333
+  },
+  "APA": {
+    "shortPercentOfFloat": 0.0936,
+    "shortRatio": 2.42,
+    "sharesShort": 25175791,
+    "sharesShortPriorMonth": 29748050
+  },
+  "EIX": {
+    "shortPercentOfFloat": 0.0372,
+    "shortRatio": 3.43,
+    "sharesShort": 10942320,
+    "sharesShortPriorMonth": 10712456
+  },
+  "FE": {
+    "shortPercentOfFloat": 0.0557,
+    "shortRatio": 5.86,
+    "sharesShort": 24195535,
+    "sharesShortPriorMonth": 25676120
+  },
+  "NRG": {
+    "shortPercentOfFloat": 0.031400003,
+    "shortRatio": 2.1,
+    "sharesShort": 5004865,
+    "sharesShortPriorMonth": 4094881
+  },
+  "AEE": {
+    "shortPercentOfFloat": 0.0368,
+    "shortRatio": 5.69,
+    "sharesShort": 8955545,
+    "sharesShortPriorMonth": 7942783
+  },
+  "ETR": {
+    "shortPercentOfFloat": 0.0342,
+    "shortRatio": 4.71,
+    "sharesShort": 13861270,
+    "sharesShortPriorMonth": 13046166
+  },
+  "VTR": {
+    "shortPercentOfFloat": 0.0465,
+    "shortRatio": 5.97,
+    "sharesShort": 19049044,
+    "sharesShortPriorMonth": 19848629
+  },
+  "KIM": {
+    "shortPercentOfFloat": 0.0452,
+    "shortRatio": 4.79,
+    "sharesShort": 25114972,
+    "sharesShortPriorMonth": 25416612
+  },
+  "ARE": {
+    "shortPercentOfFloat": 0.0594,
+    "shortRatio": 3.06,
+    "sharesShort": 7403600,
+    "sharesShortPriorMonth": 6468240
+  },
+  "CBRE": {
+    "shortPercentOfFloat": 0.0123000005,
+    "shortRatio": 1.86,
+    "sharesShort": 3589380,
+    "sharesShortPriorMonth": 3393511
+  },
+  "NNN": {
+    "shortPercentOfFloat": 0.0423,
+    "shortRatio": 3.9,
+    "sharesShort": 5932387,
+    "sharesShortPriorMonth": 6588918
+  },
+  "WBD": {
+    "shortPercentOfFloat": 0.026800001,
+    "shortRatio": 2.31,
+    "sharesShort": 59463474,
+    "sharesShortPriorMonth": 47733517
+  },
+  "MRNA": {
+    "shortPercentOfFloat": 0.1833,
+    "shortRatio": 9.78,
+    "sharesShort": 59437562,
+    "sharesShortPriorMonth": 66188177
+  },
+  "ENPH": {
+    "shortPercentOfFloat": 0.24180001,
+    "shortRatio": 4.73,
+    "sharesShort": 26468109,
+    "sharesShortPriorMonth": 20886651
+  },
+  "FSLR": {
+    "shortPercentOfFloat": 0.0796,
+    "shortRatio": 3.6,
+    "sharesShort": 6540723,
+    "sharesShortPriorMonth": 7758315
+  },
+  "CEG": {
+    "shortPercentOfFloat": 0.0318,
+    "shortRatio": 3.51,
+    "sharesShort": 10323327,
+    "sharesShortPriorMonth": 9435816
+  },
+  "VST": {
+    "shortPercentOfFloat": 0.038399998,
+    "shortRatio": 2.79,
+    "sharesShort": 11237560,
+    "sharesShortPriorMonth": 8823320
+  },
+  "DKNG": {
+    "shortPercentOfFloat": 0.085,
+    "shortRatio": 3.09,
+    "sharesShort": 40960499,
+    "sharesShortPriorMonth": 37514956
+  },
+  "RBLX": {
+    "shortPercentOfFloat": 0.0305,
+    "shortRatio": 2.29,
+    "sharesShort": 19665133,
+    "sharesShortPriorMonth": 19662904
+  },
+  "LYFT": {
+    "shortPercentOfFloat": 0.1887,
+    "shortRatio": 4.19,
+    "sharesShort": 71465153,
+    "sharesShortPriorMonth": 64709956
+  },
+  "TDG": {
+    "shortPercentOfFloat": 0.024400001,
+    "shortRatio": 2.58,
+    "sharesShort": 1038571,
+    "sharesShortPriorMonth": 946415
+  }
+}

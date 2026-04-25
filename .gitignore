@@ -12,5 +12,6 @@ venv/
 .streamlit/secrets.toml
 .env
 
-# GCS service account key files
+# GCS service account key files — exclude all JSON except pre-built screener caches
 *.json
+!cache/screener/*.json
