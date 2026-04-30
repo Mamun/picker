@@ -103,7 +103,10 @@ def get_spy_gap_table_data() -> dict:
     quote    = get_spy_quote()
     rsi_long = _get_spy_long_rsi()
 
-    gaps_df = apply_gap_cache(patch_today_gap(compute_daily_gaps(daily_df), quote))
+    raw_gaps = compute_daily_gaps(daily_df)
+    if raw_gaps.empty:
+        return {"gaps_df": pd.DataFrame(), "quote": quote, "daily_df": daily_df}
+    gaps_df = apply_gap_cache(patch_today_gap(raw_gaps, quote))
     save_confirmed_gaps(gaps_df)
 
     if not gaps_df.empty:

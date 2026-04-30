@@ -115,7 +115,10 @@ def fetch_spx_intraday(period: str = "1d", interval: str = "5m") -> pd.DataFrame
             prepost=intraday,
         )
         if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
+            lvl0 = df.columns.get_level_values(0).tolist()
+            df.columns = lvl0 if "Close" in lvl0 else df.columns.get_level_values(1).tolist()
+        if df.empty or "Close" not in df.columns:
+            return pd.DataFrame()
         return df.dropna(subset=["Close"])
     except Exception:
         return pd.DataFrame()
