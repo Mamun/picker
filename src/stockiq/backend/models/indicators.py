@@ -34,6 +34,8 @@ def compute_fibonacci(df: pd.DataFrame) -> dict[str, float]:
 
 def compute_daily_gaps(df: pd.DataFrame) -> pd.DataFrame:
     """Calculate daily gaps (current open vs previous close) and whether filled within 3 days."""
+    if df.empty or not {"Open", "Close", "High", "Low"}.issubset(df.columns):
+        return pd.DataFrame()
     cols = ["Open", "Close", "High", "Low"] + (["Volume"] if "Volume" in df.columns else [])
     df_gap = df[cols].copy()
     df_gap["Prev Close"] = df_gap["Close"].shift(1)

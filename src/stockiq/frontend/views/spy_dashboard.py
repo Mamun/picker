@@ -2,6 +2,7 @@
 
 import urllib.parse
 
+import pandas as pd
 import streamlit as st
 
 from stockiq.backend.services.market_service import get_market_overview
@@ -23,7 +24,10 @@ from stockiq.frontend.views.panels.spy_header import render_spy_header
 def render_spy_dashboard_tab() -> None:
     # Gap data is historical (changes once at market open) — fetch once per page load,
     # not on every fragment refresh.
-    gap_data = get_spy_gap_table_data()
+    try:
+        gap_data = get_spy_gap_table_data()
+    except Exception:
+        gap_data = {"gaps_df": pd.DataFrame(), "quote": {}, "daily_df": pd.DataFrame()}
 
     @st.fragment(run_every="90s")
     def _live_section() -> None:
