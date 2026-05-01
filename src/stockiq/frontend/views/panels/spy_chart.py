@@ -169,6 +169,7 @@ def render_spy_chart_section(quote: dict) -> None:
     )
     if _table:
         st.html(_table)
+        st.markdown("📋 [View full-screen levels →](/spy-levels)")
     else:
         st.caption("No levels to display — enable at least one overlay above.")
 
@@ -213,6 +214,23 @@ def _series_last(s) -> float | None:
         return None
 
 
+_LEVELS_CSS = """<style>
+.spy-lv-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.spy-lv-tbl{width:100%;border-collapse:collapse;min-width:320px}
+.spy-lv-sum{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;background:#0F172A;border:1px solid #1E293B;border-radius:8px;
+  margin-bottom:6px;gap:8px;flex-wrap:wrap}
+@media(max-width:560px){
+  .spy-lv-type{display:none}
+  .spy-lv-tbl td,.spy-lv-tbl th{padding:5px 6px !important}
+  .spy-lv-nm{font-size:11px !important}
+  .spy-lv-px{font-size:11px !important}
+  .spy-lv-dp{font-size:11px !important}
+  .spy-lv-ds{font-size:9px !important}
+  .spy-lv-role{font-size:9px !important;padding:2px 5px !important}
+}
+</style>"""
+
 _ROLE_MAP: dict[str, tuple[str, str, str]] = {
     # label: (role_text, text_color, bg_color)
     "Call Wall":  ("Resistance", "#86EFAC", "#052E16"),
@@ -235,6 +253,80 @@ _ROLE_MAP: dict[str, tuple[str, str, str]] = {
     "Pivot":      ("Pivot",      "#38BDF8", "#082F49"),
     "Prev Close": ("Reference",  "#64748B", "#1E293B"),
 }
+
+
+def compute_spy_levels(quote: dict) -> dict:
+    """Compute all key levels for the levels table. Returns a dict of floats (None if unavailable)."""
+    price = quote.get("price") or 0
+    if not price:
+        return {}
+
+    # VWAP from today's intraday data
+    vwap = vwap_u1 = vwap_l1 = vwap_u2 = vwap_l2 = None
+    try:
+        intraday = get_spy_chart_df(period="1d", interval="1m")
+        if not intraday.empty and "Volume" in intraday.columns and intraday["Volume"].sum() > 0:
+            vf, u1, l1, u2, l2 = _compute_vwap_bands(intraday)
+            vwap    = _series_last(vf)
+            vwap_u1 = _series_last(u1)
+            vwap_l1 = _series_last(l1)
+            vwap_u2 = _series_last(u2)
+            vwap_l2 = _series_last(l2)
+    except Exception:
+        pass
+
+    # Opening range (first 15 minutes at 1m)
+    or_high = or_low = None
+    try:
+        intraday = intraday if vwap is not None else get_spy_chart_df(period="1d", interval="1m")
+        if len(intraday) >= 15:
+            _or = intraday.head(15)
+            or_high = float(_or["High"].max())
+            or_low  = float(_or["Low"].min())
+    except Exception:
+        pass
+
+    # Pivot levels (PDH, PDL, Pivot, R1, S1)
+    pdh, pdl, pivot, r1, s1 = _compute_pivot_levels()
+
+    # Prev close
+    prev_close = quote.get("prev_close")
+
+    # EMA 21 daily trend anchor
+    ema21 = None
+    try:
+        daily = get_spy_chart_df(period="1y", interval="1d")
+        if len(daily) >= 21:
+            ema21 = float(daily["Close"].ewm(span=21, adjust=False).mean().iloc[-1])
+    except Exception:
+        pass
+
+    # Options levels
+    max_pain = call_wall = put_wall = em_upper = em_lower = None
+    try:
+        seed = get_spy_options_analysis(expiration="", current_price=price)
+        if seed:
+            max_pain = seed.get("max_pain")
+            oi_df    = seed.get("oi_df")
+            if oi_df is not None and not oi_df.empty:
+                call_wall = float(oi_df.loc[oi_df["call_oi"].idxmax(), "strike"])
+                put_wall  = float(oi_df.loc[oi_df["put_oi"].idxmax(), "strike"])
+            em_s = seed.get("expected_move")
+            if em_s and em_s.get("move"):
+                em_upper = round(price + em_s["move"], 2)
+                em_lower = round(price - em_s["move"], 2)
+    except Exception:
+        pass
+
+    return dict(
+        vwap=vwap, vwap_u1=vwap_u1, vwap_l1=vwap_l1, vwap_u2=vwap_u2, vwap_l2=vwap_l2,
+        or_high=or_high, or_low=or_low,
+        pdh=pdh, pdl=pdl, pivot=pivot, r1=r1, s1=s1,
+        prev_close=prev_close,
+        max_pain=max_pain, call_wall=call_wall, put_wall=put_wall,
+        em_upper=em_upper, em_lower=em_lower,
+        ema21=ema21,
+    )
 
 
 def _levels_table_html(
@@ -291,10 +383,10 @@ def _levels_table_html(
             f'<span style="color:{d_col};font-size:15px;line-height:1;">{arrow}</span>'
             f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;'
             f'background:{dot};flex-shrink:0;"></span>'
-            f'<span style="font-size:12px;color:#E2E8F0;font-weight:600;">{lbl}</span>'
+            f'<span class="spy-lv-nm" style="font-size:12px;color:#E2E8F0;font-weight:600;">{lbl}</span>'
             f'<span style="font-size:11px;color:{role_col};">{role_txt}</span>'
-            f'<span style="font-size:12px;color:#F8FAFC;font-family:monospace;">${val:,.2f}</span>'
-            f'<span style="font-size:12px;font-weight:600;color:{d_col};font-family:monospace;">'
+            f'<span class="spy-lv-px" style="font-size:12px;color:#F8FAFC;font-family:monospace;">${val:,.2f}</span>'
+            f'<span class="spy-lv-dp" style="font-size:12px;font-weight:600;color:{d_col};font-family:monospace;">'
             f'{"+" if is_above else ""}{pct:.2f}%</span>'
             f'</div>'
         )
@@ -302,9 +394,7 @@ def _levels_table_html(
     nearest_above = rows[insert_idx - 1] if insert_idx > 0 else None
     nearest_below = rows[insert_idx] if insert_idx < len(rows) else None
     summary_bar = (
-        f'<div style="display:flex;justify-content:space-between;align-items:center;'
-        f'padding:8px 14px;background:#0F172A;border:1px solid #1E293B;border-radius:8px;'
-        f'margin-bottom:6px;gap:8px;flex-wrap:wrap;">'
+        f'<div class="spy-lv-sum">'
         f'{_summary_cell(nearest_above, True)}'
         f'<div style="width:1px;height:22px;background:#1E293B;flex-shrink:0;"></div>'
         f'{_summary_cell(nearest_below, False)}'
@@ -323,19 +413,19 @@ def _levels_table_html(
             f'<td style="padding:7px 10px;white-space:nowrap;">'
             f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
             f'background:{dot};margin-right:8px;vertical-align:middle;flex-shrink:0;"></span>'
-            f'<span style="color:#E2E8F0;font-size:13px;">{lbl}</span></td>'
-            f'<td style="padding:7px 10px;font-size:13px;font-family:monospace;'
-            f'color:#F8FAFC;text-align:right;white-space:nowrap;">${val:,.2f}</td>'
+            f'<span class="spy-lv-nm" style="color:#E2E8F0;font-size:13px;">{lbl}</span></td>'
             f'<td style="padding:7px 10px;text-align:right;white-space:nowrap;">'
-            f'<div style="font-size:12px;font-weight:600;color:{d_col};font-family:monospace;">'
+            f'<span class="spy-lv-px" style="font-size:13px;font-family:monospace;color:#F8FAFC;">${val:,.2f}</span></td>'
+            f'<td style="padding:7px 10px;text-align:right;white-space:nowrap;">'
+            f'<div class="spy-lv-dp" style="font-size:12px;font-weight:600;color:{d_col};font-family:monospace;">'
             f'{arrow} {abs(pct):.2f}%</div>'
-            f'<div style="font-size:10px;color:#475569;font-family:monospace;">${abs(dist):,.2f}</div>'
+            f'<div class="spy-lv-ds" style="font-size:10px;color:#475569;font-family:monospace;">${abs(dist):,.2f}</div>'
             f'</td>'
-            f'<td style="padding:7px 10px;text-align:right;">'
+            f'<td class="spy-lv-type" style="padding:7px 10px;text-align:right;">'
             f'<span style="font-size:10px;padding:2px 7px;border-radius:4px;'
             f'background:{cat_bg};color:#CBD5E1;">{cat}</span></td>'
             f'<td style="padding:7px 10px;text-align:right;">'
-            f'<span style="font-size:10px;padding:2px 7px;border-radius:4px;'
+            f'<span class="spy-lv-role" style="font-size:10px;padding:2px 7px;border-radius:4px;'
             f'background:{role_bg};color:{role_col};font-weight:600;">{role_txt}</span></td>'
             f'</tr>'
         )
@@ -357,24 +447,27 @@ def _levels_table_html(
     if insert_idx == len(rows):
         html_rows.append(_price_sep)
 
-    def _th(label, align="right"):
+    def _th(label, align="right", cls=""):
+        cls_attr = f' class="{cls}"' if cls else ""
         return (
-            f'<th style="padding:6px 10px;text-align:{align};font-size:10px;color:#64748B;'
+            f'<th{cls_attr} style="padding:6px 10px;text-align:{align};font-size:10px;color:#64748B;'
             f'font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">{label}</th>'
         )
 
     header = (
         f'<tr style="border-bottom:1px solid #1E293B;">'
-        f'{_th("Level", "left")}{_th("Price")}{_th("Dist")}{_th("Type")}{_th("Role")}'
+        f'{_th("Level", "left")}{_th("Price")}{_th("Dist")}'
+        f'{_th("Type", cls="spy-lv-type")}{_th("Role")}'
         f'</tr>'
     )
 
     return (
-        summary_bar
-        + '<div style="background:#0B1120;border:1px solid #1E293B;border-radius:10px;'
-        'overflow:hidden;">'
-        f'<table style="width:100%;border-collapse:collapse;">'
-        f'<thead>{header}</thead>'
-        f'<tbody>{"".join(html_rows)}</tbody>'
-        '</table></div>'
+        _LEVELS_CSS
+        + summary_bar
+        + '<div class="spy-lv-wrap">'
+        + '<div style="background:#0B1120;border:1px solid #1E293B;border-radius:10px;overflow:hidden;">'
+        + '<table class="spy-lv-tbl">'
+        + f'<thead>{header}</thead>'
+        + f'<tbody>{"".join(html_rows)}</tbody>'
+        + '</table></div></div>'
     )
